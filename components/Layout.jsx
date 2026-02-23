@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Briefcase, User } from 'lucide-react';
+import { LayoutDashboard, Calendar, Briefcase, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMentor } from '../context/MentorContext';
 
 export default function Layout() {
   const { mentor, profileImageUrl } = useMentor();
   const navigate = useNavigate();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Grouping navigation to match the structured look of the reference image
   const navGroups = [
@@ -24,7 +25,6 @@ export default function Layout() {
     {
       title: 'Educational path',
       items: [
-        { to: '/mentor', icon: Users, label: 'My Students' },
         { to: '/sessions', icon: Calendar, label: 'Sessions' },
       ]
     }
@@ -33,10 +33,18 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900">
       {/* Sidebar */}
-      <aside className="w-[260px] bg-white border-r border-slate-200/60 fixed h-full z-20 hidden md:flex md:flex-col shadow-[4px_0_24px_rgba(0,0,0,0.01)]">
+      <aside className={`${isCollapsed ? 'w-[80px]' : 'w-[260px]'} bg-white border-r border-slate-200/60 fixed h-full z-20 hidden md:flex md:flex-col shadow-[4px_0_24px_rgba(0,0,0,0.01)] transition-all duration-300`}>
+
+        {/* Collapse Toggle Button */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-9 bg-white border border-slate-200 rounded-full p-1 shadow-sm hover:bg-slate-50 text-slate-500 z-50"
+        >
+          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
 
         {/* Custom Logo Area */}
-        <div className="px-6 py-7 flex items-end gap-[1px]">
+        <div className={`px-6 py-7 flex items-end gap-0 ${isCollapsed ? 'justify-center px-2' : ''}`}>
           {/* Recreated "M" People Icon in purely scalable SVG */}
           <svg
             viewBox="0 0 54 60"
@@ -74,29 +82,33 @@ export default function Layout() {
           </svg>
 
           {/* Typography perfectly aligned to the baseline of the SVG */}
-          <span className="text-[26px] font-bold tracking-tight leading-none mb-[2px]">
-            <span className="text-slate-900">ento</span>
-            <span className="text-[#2563eb]">Mania</span>
-          </span>
+          {!isCollapsed && (
+            <span className="text-[26px] font-bold tracking-tight leading-none mb-[2px] -ml-1">
+              <span className="text-slate-900">ento</span>
+              <span className="text-[oklch(0.546_0.245_262.24)]">Mania</span>
+            </span>
+          )}
         </div>
 
         {/* Mini User Profile Snippet */}
-        <div className="px-5 pb-6">
+        <div className={`px-5 pb-6 ${isCollapsed ? 'px-2' : ''}`}>
           <div
             onClick={() => navigate('/profile')}
-            className="flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 shadow-sm transition-all hover:shadow-md cursor-pointer"
+            className={`flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 shadow-sm transition-all hover:shadow-md cursor-pointer ${isCollapsed ? 'justify-center border-transparent shadow-none hover:bg-slate-100' : ''}`}
           >
-            <div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
+            <div className="w-9 h-9 rounded-full bg-[oklch(0.96_0.03_262.24)] overflow-hidden shrink-0">
               <img
-                src={profileImageUrl || "https://ui-avatars.com/api/?name=User&background=e0e7ff&color=4f46e5"}
+                src={profileImageUrl || "https://ui-avatars.com/api/?name=User&background=eef2ff&color=4f46e5"}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="overflow-hidden flex-1">
-              <h3 className="text-sm font-semibold text-slate-800 truncate">{mentor?.name || 'User'}</h3>
-              <p className="text-xs text-slate-500 truncate">{mentor?.title || 'Mentor'}</p>
-            </div>
+            {!isCollapsed && (
+              <div className="overflow-hidden flex-1">
+                <h3 className="text-sm font-semibold text-slate-800 truncate">{mentor?.name || 'User'}</h3>
+                <p className="text-xs text-slate-500 truncate">{mentor?.title || 'Mentor'}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -104,28 +116,31 @@ export default function Layout() {
         <nav className="flex-1 px-4 space-y-6 overflow-y-auto pb-6">
           {navGroups.map((group, index) => (
             <div key={index}>
-              <h4 className="px-3 mb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
-                {group.title}
-              </h4>
+              {!isCollapsed && (
+                <h4 className="px-3 mb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+                  {group.title}
+                </h4>
+              )}
               <div className="space-y-1">
                 {group.items.map(({ to, icon: Icon, label }) => (
                   <NavLink
                     key={to}
                     to={to}
+                    title={isCollapsed ? label : ''}
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
-                        ? 'bg-blue-50/80 text-blue-600'
+                        ? 'bg-[oklch(0.96_0.03_262.24)]/80 text-[oklch(0.546_0.245_262.24)]'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                      }`
+                      } ${isCollapsed ? 'justify-center' : ''}`
                     }
                   >
                     {({ isActive }) => (
                       <>
                         <Icon
-                          className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`}
+                          className={`w-5 h-5 ${isActive ? 'text-[oklch(0.546_0.245_262.24)]' : 'text-slate-400'}`}
                           strokeWidth={isActive ? 2.5 : 2}
                         />
-                        {label}
+                        {!isCollapsed && label}
                       </>
                     )}
                   </NavLink>
@@ -137,7 +152,7 @@ export default function Layout() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 md:ml-[260px] min-h-screen flex flex-col">
+      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'md:ml-[80px]' : 'md:ml-[260px]'} min-h-screen flex flex-col`}>
         {/* Optional subtle top header bar area */}
         <header className="h-16 flex items-center justify-end px-8 md:hidden bg-white border-b border-slate-200">
           {/* Mobile menu trigger could go here */}

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   User,
@@ -37,6 +37,8 @@ export default function EditProfile() {
   // Local state for the banner image
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
   const [newSkill, setNewSkill] = useState('');
+  const [errors, setErrors] = useState({});
+  const [successAnimations, setSuccessAnimations] = useState({});
 
   // Phone dropdown states
   const [isPhoneDropdownOpen, setIsPhoneDropdownOpen] = useState(false);
@@ -58,6 +60,12 @@ export default function EditProfile() {
     { code: '+971', label: 'AE', color: 'bg-teal-600' },
   ];
 
+  useEffect(() => {
+    if (mentor?.availability) {
+      setSlots(mentor.availability);
+    }
+  }, [mentor?.availability]);
+
   const handleProfileImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
@@ -70,24 +78,128 @@ export default function EditProfile() {
     setBannerImageUrl(URL.createObjectURL(file));
   };
 
+  const validateField = (field, value) => {
+    if (value === null || value === undefined) return '';
+    let error = '';
+    if (field === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      error = 'Invalid email address';
+    }
+    if (field === 'phone') {
+      if (value && !/^\d+$/.test(value)) {
+        error = 'Phone number must contain only digits';
+      } else if (value && (value.length < 8 || value.length > 15)) {
+        error = 'Phone number must be 8-15 digits';
+      } else if (value && /^0+$/.test(value)) {
+        error = 'Invalid phone number';
+      }
+    }
+    if (field === 'name') {
+      if (!value.trim()) error = 'Name cannot be empty';
+      else if (value.trim().length < 2) error = 'Name is too short';
+      else if (!/^[a-zA-Z\s.\-]+$/.test(value)) error = 'Name contains invalid characters';
+    }
+
+    // Payment Validations
+    if (field === 'bankName') {
+      if (!value.trim()) error = 'Bank Name is required';
+      else if (value.trim().length < 3) error = 'Bank Name is too short';
+      else if (!/^[a-zA-Z0-9\s.&-]+$/.test(value)) error = 'Bank Name contains invalid characters';
+    }
+    if (field === 'accountNumber') {
+      if (!value.trim()) error = 'Account Number is required';
+      else if (!/^\d+$/.test(value)) error = 'Account Number must be digits only';
+      else if (value.length < 8 || value.length > 20) error = 'Invalid Account Number length';
+      else if (/^0+$/.test(value)) error = 'Invalid Account Number';
+    }
+    if (field === 'ifsc') {
+      if (!value.trim()) error = 'Code is required';
+      else if (!/^[A-Z0-9]+$/i.test(value)) error = 'Invalid format (alphanumeric only)';
+      else if (value.length < 4 || value.length > 11) error = 'Invalid length';
+    }
+    if (field === 'accountHolder') {
+      if (!value.trim()) error = 'Account Holder Name is required';
+      else if (value.trim().length < 3) error = 'Name is too short';
+      else if (!/^[a-zA-Z\s.\-]+$/.test(value)) error = 'Name contains invalid characters';
+    }
+    return error;
+  };
+
   const updateField = (field, value) => {
+    // Strict input masking for numeric fields
+    if ((field === 'phone' || field === 'accountNumber') && value) {
+      if (!/^\d*$/.test(value)) return;
+      if (field === 'phone' && value.length > 15) return;
+      if (field === 'accountNumber' && value.length > 20) return;
+    }
+
+    // Strict input masking for name fields (letters, spaces, dots, hyphens only)
+    if ((field === 'name' || field === 'accountHolder') && value) {
+      if (!/^[a-zA-Z\s.\-]*$/.test(value)) return;
+    }
+
+    // Strict input masking for Bank Name (alphanumeric, spaces, dots, &, -)
+    if (field === 'bankName' && value) {
+      if (!/^[a-zA-Z0-9\s.&-]*$/.test(value)) return;
+    }
+
+    // Strict input masking for IFSC (alphanumeric only)
+    if (field === 'ifsc' && value) {
+      if (!/^[a-zA-Z0-9]*$/.test(value)) return;
+      if (value.length > 11) return;
+    }
+
+    // Email masking (no spaces)
+    if (field === 'email' && value && /\s/.test(value)) {
+      return;
+    }
+
     setMentor((prev) => ({ ...prev, [field]: value }));
+    const error = validateField(field, value);
+
+    if (error) {
+      if (navigator.vibrate) navigator.vibrate(200);
+      setErrors((prev) => ({ ...prev, [field]: error }));
+    } else {
+      if (errors[field]) {
+        setSuccessAnimations((prev) => ({ ...prev, [field]: true }));
+        setTimeout(() => setSuccessAnimations((prev) => ({ ...prev, [field]: false })), 1000);
+      }
+      setErrors((prev) => ({ ...prev, [field]: '' }));
+    }
   };
 
   const removeSkill = (indexToRemove) => {
     setMentor((prev) => ({
       ...prev,
-      skills: prev.skills.filter((_, i) => i !== indexToRemove),
+      skills: (prev.skills || []).filter((_, i) => i !== indexToRemove),
     }));
   };
 
   const handleAddSkill = () => {
-    if (newSkill.trim()) {
+    const skill = newSkill.trim();
+    if (skill) {
+      if (skill.length < 2) {
+        setErrors(prev => ({ ...prev, skills: 'Skill is too short' }));
+        if (navigator.vibrate) navigator.vibrate(200);
+        return;
+      }
+      if (!/[a-zA-Z]/.test(skill)) {
+        setErrors(prev => ({ ...prev, skills: 'Skill must contain letters' }));
+        if (navigator.vibrate) navigator.vibrate(200);
+        return;
+      }
+      if (mentor?.skills?.some(s => s.toLowerCase() === skill.toLowerCase())) {
+        setErrors(prev => ({ ...prev, skills: 'Skill already added' }));
+        if (navigator.vibrate) navigator.vibrate(200);
+        return;
+      }
+
       setMentor((prev) => ({
         ...prev,
-        skills: [...(prev.skills || []), newSkill.trim()],
+        skills: [...(prev.skills || []), skill],
       }));
       setNewSkill('');
+      setErrors(prev => ({ ...prev, skills: '' }));
     }
   };
 
@@ -118,6 +230,7 @@ export default function EditProfile() {
   const addSlot = () => {
     if (newSlot.startTime && newSlot.endTime) {
       if (newSlot.startTime >= newSlot.endTime) {
+        if (navigator.vibrate) navigator.vibrate(200);
         showNotification('add-slot', 'Start time must be before end time');
         return;
       }
@@ -238,6 +351,24 @@ export default function EditProfile() {
   return (
     <div className="min-h-screen bg-slate-50/80 font-sans text-slate-900 pb-16">
 
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-4px); }
+          75% { transform: translateX(4px); }
+        }
+        .animate-shake {
+          animation: shake 0.2s ease-in-out 0s 2;
+        }
+        @keyframes flash-green {
+          0%, 50% { border-color: #22c55e; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1); }
+          100% { border-color: #2563eb; box-shadow: none; }
+        }
+        .animate-success {
+          animation: flash-green 0.6s ease-out;
+        }
+      `}</style>
+
       {/* ================= TOP HEADER ================= */}
       <div className="max-w-7xl mx-auto px-8 py-8 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -272,12 +403,16 @@ export default function EditProfile() {
           : isQRVisible || activeSection === 'personal' ? 'scale-[1.02] shadow-2xl ring-1 ring-slate-200 z-20' : 'z-0 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50'
           }`}>
           {/* Banner */}
-          <div className="h-40 w-full bg-gradient-to-r from-[#f3c8f5] via-[#e2e8f0] to-[#bfdbfe] relative overflow-hidden">
+          <div className="h-40 w-full relative overflow-hidden">
             {bannerImageUrl && (
               <img src={bannerImageUrl} alt="Banner" className="absolute inset-0 w-full h-full object-cover z-0" />
             )}
-            <div className="absolute top-0 right-20 w-64 h-64 bg-[#f97316] rounded-full mix-blend-multiply opacity-60 -translate-y-20 translate-x-10 filter blur-[40px] z-10"></div>
-            <div className="absolute bottom-[-60px] left-10 w-56 h-56 bg-[#4ade80] rounded-full mix-blend-multiply opacity-60 filter blur-[40px] z-10"></div>
+            {!bannerImageUrl && (
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-[#f3c8f5] via-[#e2e8f0] to-[#bfdbfe] animate-pulse" style={{ animationDuration: '3s' }}>
+                <div className="absolute top-0 right-20 w-80 h-80 bg-[#f97316] rounded-full mix-blend-multiply opacity-60 -translate-y-20 translate-x-10 filter blur-[60px]"></div>
+                <div className="absolute bottom-[-60px] left-10 w-72 h-72 bg-[#4ade80] rounded-full mix-blend-multiply opacity-60 filter blur-[60px]"></div>
+              </div>
+            )}
 
             <label className="absolute top-6 right-6 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition text-slate-700 cursor-pointer z-20">
               <Camera className="w-4 h-4" strokeWidth={2.5} />
@@ -291,9 +426,9 @@ export default function EditProfile() {
             <div className="flex flex-col md:flex-row items-center md:items-end gap-6 w-full">
               {/* Avatar Overlapping Banner */}
               <div className="relative -mt-20 shrink-0 z-20">
-                <label className="block w-36 h-36 rounded-full border-[6px] border-white bg-slate-100 shadow-md overflow-hidden relative z-10 cursor-pointer">
+                <label className="block w-36 h-36 rounded-full border-[6px] border-white bg-[oklch(0.96_0.03_262.24)] shadow-md overflow-hidden relative z-10 cursor-pointer">
                   <img
-                    src={profileImageUrl || "https://ui-avatars.com/api/?name=Ayman+Shaltoni&background=e0e7ff&color=4f46e5"}
+                    src={profileImageUrl || "https://ui-avatars.com/api/?name=Ayman+Shaltoni&background=eef2ff&color=4f46e5"}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
@@ -357,8 +492,9 @@ export default function EditProfile() {
                             type="text"
                             value={mentor?.name || ''}
                             onChange={(e) => updateField('name', e.target.value)}
-                            className="block w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-[15px] text-slate-900 font-bold focus:ring-0 focus:border-blue-600 outline-none transition-colors"
+                            className={`block w-full px-4 py-2.5 border-2 ${errors.name ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.name ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-bold focus:ring-0 outline-none transition-colors`}
                           />
+                          {errors.name && <p className="text-red-500 text-xs mt-1 font-bold">{errors.name}</p>}
                         </div>
                         <div>
                           <label className="block text-[13px] font-bold text-slate-500 mb-1.5">Role</label>
@@ -375,12 +511,13 @@ export default function EditProfile() {
                             type="email"
                             value={mentor?.email || ''}
                             onChange={(e) => updateField('email', e.target.value)}
-                            className="block w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-[15px] text-slate-900 font-bold focus:ring-0 focus:border-blue-600 outline-none transition-colors"
+                            className={`block w-full px-4 py-2.5 border-2 ${errors.email ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.email ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-bold focus:ring-0 outline-none transition-colors`}
                           />
+                          {errors.email && <p className="text-red-500 text-xs mt-1 font-bold">{errors.email}</p>}
                         </div>
                         <div>
                           <label className="block text-[13px] font-bold text-slate-500 mb-1.5">Phone</label>
-                          <div className="flex border-2 border-slate-200 rounded-xl focus-within:border-blue-600 transition-colors relative bg-white">
+                          <div className={`flex border-2 ${errors.phone ? 'border-red-500 focus-within:border-red-500 animate-shake' : successAnimations.phone ? 'border-blue-600 animate-success' : 'border-slate-200 focus-within:border-blue-600'} rounded-xl transition-colors relative bg-white`}>
                             <div
                               className="flex items-center gap-1 px-3 border-r-2 border-slate-200 text-[14px] font-bold text-slate-700 cursor-pointer hover:bg-slate-50 rounded-l-xl"
                               onClick={() => setIsPhoneDropdownOpen(!isPhoneDropdownOpen)}
@@ -411,6 +548,7 @@ export default function EditProfile() {
                               className="block w-full px-4 py-2.5 text-[15px] text-slate-900 font-bold outline-none border-none bg-transparent rounded-r-xl"
                             />
                           </div>
+                          {errors.phone && <p className="text-red-500 text-xs mt-1 font-bold">{errors.phone}</p>}
                         </div>
                       </div>
                     ) : (
@@ -496,20 +634,46 @@ export default function EditProfile() {
                 <div className="space-y-5">
                   <div>
                     <label className="block text-[14px] font-bold text-slate-800 mb-2">Bank Name</label>
-                    <input type="text" className="block w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-[15px] text-slate-900 font-semibold focus:ring-0 focus:border-blue-600 outline-none transition-colors" placeholder="e.g. Chase Bank" />
+                    <input
+                      type="text"
+                      value={mentor?.bankName || ''}
+                      onChange={(e) => updateField('bankName', e.target.value)}
+                      className={`block w-full px-4 py-3 border-2 ${errors.bankName ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.bankName ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                      placeholder="e.g. Chase Bank"
+                    />
+                    {errors.bankName && <p className="text-red-500 text-xs mt-1 font-bold">{errors.bankName}</p>}
                   </div>
                   <div>
                     <label className="block text-[14px] font-bold text-slate-800 mb-2">Account Number</label>
-                    <input type="text" className="block w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-[15px] text-slate-900 font-semibold focus:ring-0 focus:border-blue-600 outline-none transition-colors" placeholder="**** **** **** 1234" />
+                    <input
+                      type="text"
+                      value={mentor?.accountNumber || ''}
+                      onChange={(e) => updateField('accountNumber', e.target.value)}
+                      className={`block w-full px-4 py-3 border-2 ${errors.accountNumber ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.accountNumber ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                      placeholder="**** **** **** 1234"
+                    />
+                    {errors.accountNumber && <p className="text-red-500 text-xs mt-1 font-bold">{errors.accountNumber}</p>}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[14px] font-bold text-slate-800 mb-2">IFSC / SWIFT</label>
-                      <input type="text" className="block w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-[15px] text-slate-900 font-semibold focus:ring-0 focus:border-blue-600 outline-none transition-colors" />
+                      <input
+                        type="text"
+                        value={mentor?.ifsc || ''}
+                        onChange={(e) => updateField('ifsc', e.target.value)}
+                        className={`block w-full px-4 py-3 border-2 ${errors.ifsc ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.ifsc ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                      />
+                      {errors.ifsc && <p className="text-red-500 text-xs mt-1 font-bold">{errors.ifsc}</p>}
                     </div>
                     <div>
                       <label className="block text-[14px] font-bold text-slate-800 mb-2">Account Holder</label>
-                      <input type="text" className="block w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-[15px] text-slate-900 font-semibold focus:ring-0 focus:border-blue-600 outline-none transition-colors" />
+                      <input
+                        type="text"
+                        value={mentor?.accountHolder || ''}
+                        onChange={(e) => updateField('accountHolder', e.target.value)}
+                        className={`block w-full px-4 py-3 border-2 ${errors.accountHolder ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.accountHolder ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                      />
+                      {errors.accountHolder && <p className="text-red-500 text-xs mt-1 font-bold">{errors.accountHolder}</p>}
                     </div>
                   </div>
                 </div>
@@ -561,19 +725,28 @@ export default function EditProfile() {
               </div>
 
               {activeSection === 'skills' && (
-                <div className="flex gap-3">
-                  <input
-                    type="text"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
-                    placeholder="Type a skill..."
-                    className="flex-1 px-4 py-3 border-2 border-slate-200 rounded-xl text-[15px] font-bold text-slate-700 outline-none focus:border-blue-600 transition-colors"
-                  />
-                  <button onClick={handleAddSkill} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors flex items-center gap-2">
-                    <Plus className="w-5 h-5" /> Add
-                  </button>
-                </div>
+                <>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      value={newSkill}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (/^[a-zA-Z0-9\s.\-+#]*$/.test(val)) {
+                          setNewSkill(val);
+                          if (errors.skills) setErrors(prev => ({ ...prev, skills: '' }));
+                        }
+                      }}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
+                      placeholder="Type a skill..."
+                      className={`flex-1 px-4 py-3 border-2 ${errors.skills ? 'border-red-500 focus:border-red-500 animate-shake' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] font-bold text-slate-700 outline-none transition-colors`}
+                    />
+                    <button onClick={handleAddSkill} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors flex items-center gap-2">
+                      <Plus className="w-5 h-5" /> Add
+                    </button>
+                  </div>
+                  {errors.skills && <p className="text-red-500 text-xs mt-1 font-bold">{errors.skills}</p>}
+                </>
               )}
             </div>
 
