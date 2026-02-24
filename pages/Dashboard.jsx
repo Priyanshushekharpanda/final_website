@@ -190,7 +190,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 flex flex-col">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-xl font-bold text-slate-900">Availability</h2>
-              <button onClick={() => navigate('/profile')} className="text-slate-400 hover:text-blue-600 transition-colors">
+              <button onClick={() => navigate('/availability')} className="text-slate-400 hover:text-blue-600 transition-colors">
                 <ArrowUpRight className="w-5 h-5" />
               </button>
             </div>
@@ -217,7 +217,7 @@ export default function Dashboard() {
             </div>
 
             <button
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate('/availability')}
               className="w-full mt-6 py-3 px-4 border-2 border-slate-100 hover:border-slate-200 text-slate-600 font-bold rounded-2xl transition-all"
             >
               Manage Slots

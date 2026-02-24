@@ -1,0 +1,606 @@
+import React, { useState, useEffect, useRef } from 'react';
+import Calendar from 'react-calendar';
+import {
+    Clock,
+    Plus,
+    Trash2,
+    Calendar as CalendarIcon,
+    Save,
+    Check,
+    ChevronRight,
+    ChevronDown,
+    AlertCircle,
+    Repeat,
+    X,
+    Ban
+} from 'lucide-react';
+import { useMentor } from '../context/MentorContext';
+
+// --- Time Helper Functions ---
+
+// Convert "14:30" -> { hour: 2, minute: "30", period: "PM" }
+const parseTime = (time24) => {
+    if (!time24) return { hour: 9, minute: "00", period: "AM" };
+    const [h, m] = time24.split(':');
+    let hourInt = parseInt(h, 10);
+    const period = hourInt >= 12 ? 'PM' : 'AM';
+
+    // Convert 0 -> 12, 13 -> 1, etc.
+    hourInt = hourInt % 12;
+    if (hourInt === 0) hourInt = 12;
+
+    return { hour: hourInt, minute: m, period };
+};
+
+// Convert { hour: 2, minute: "30", period: "PM" } -> "14:30"
+const formatTime = (hour, minute, period) => {
+    let hourInt = parseInt(hour, 10);
+
+    if (period === 'PM' && hourInt !== 12) {
+        hourInt += 12;
+    } else if (period === 'AM' && hourInt === 12) {
+        hourInt = 0;
+    }
+
+    const h = hourInt.toString().padStart(2, '0');
+    return `${h}:${minute}`;
+};
+
+// --- New Visual Clock Picker Component ---
+const TimePicker = ({ value, onChange, className = "" }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = useRef(null);
+
+    // Parse current value to control internal state
+    const { hour, minute, period } = parseTime(value);
+
+    // Close on click outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleUpdate = (newHour, newMinute, newPeriod) => {
+        const timeString = formatTime(newHour, newMinute, newPeriod);
+        onChange(timeString);
+    };
+
+    return (
+        <div className="relative" ref={containerRef}>
+            {/* Trigger Button */}
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className={`flex items-center gap-2 outline-none transition-all duration-200 hover:bg-slate-100 rounded-md px-2 py-1 ${className}`}
+            >
+                <span className="font-bold text-slate-700 tabular-nums">
+                    {hour}:{minute} <span className="text-xs text-slate-500 ml-0.5">{period}</span>
+                </span>
+                <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Visual Clock/Grid Popover */}
+            {isOpen && (
+                <div className="absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4 w-[280px] animate-in fade-in zoom-in-95 duration-150">
+
+                    {/* Header Display */}
+                    <div className="flex justify-center mb-4 pb-4 border-b border-slate-100">
+                        <div className="flex items-baseline gap-1 text-3xl font-black text-slate-800 tracking-tight">
+                            {hour}:{minute}
+                            <span className="text-sm font-bold text-slate-400 ml-1">{period}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 h-48">
+                        {/* Hours Column */}
+                        <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-2 text-center">Hour</div>
+                            <div className="grid grid-cols-1 gap-1">
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((h) => (
+                                    <button
+                                        key={h}
+                                        onClick={() => handleUpdate(h, minute, period)}
+                                        className={`py-1.5 rounded-lg text-sm font-bold transition-colors ${hour === h
+                                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                                            : 'text-slate-600 hover:bg-slate-100'
+                                            }`}
+                                    >
+                                        {h}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="w-px bg-slate-100 h-full"></div>
+
+                        {/* Minutes Column */}
+                        <div className="flex-1">
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-2 text-center">Min</div>
+                            <div className="flex flex-col gap-1">
+                                {['00', '15', '30', '45'].map((m) => (
+                                    <button
+                                        key={m}
+                                        onClick={() => handleUpdate(hour, m, period)}
+                                        className={`py-2 rounded-lg text-sm font-bold transition-colors ${minute === m
+                                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                                            : 'text-slate-600 hover:bg-slate-100'
+                                            }`}
+                                    >
+                                        :{m}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="w-px bg-slate-100 h-full"></div>
+
+                        {/* AM/PM Column */}
+                        <div className="flex-1 flex flex-col justify-center gap-2">
+                            {['AM', 'PM'].map((p) => (
+                                <button
+                                    key={p}
+                                    onClick={() => handleUpdate(hour, minute, p)}
+                                    className={`py-3 rounded-xl text-xs font-bold transition-colors border ${period === p
+                                        ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                                        : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                                        }`}
+                                >
+                                    {p}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default function Availability() {
+    const { mentor, setMentor } = useMentor();
+    const [activeTab, setActiveTab] = useState('weekly'); // 'weekly' | 'dates'
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [notification, setNotification] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Initialize state from context
+    const [weeklySlots, setWeeklySlots] = useState(mentor?.availability || []);
+    const [dateSpecificSlots, setDateSpecificSlots] = useState(mentor?.dateAvailability || {});
+
+    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+    // Helper to get next occurrence of a day
+    const getUpcomingDate = (dayName) => {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const today = new Date();
+        const currentDayIndex = today.getDay();
+        const targetDayIndex = days.indexOf(dayName);
+
+        let daysUntil = targetDayIndex - currentDayIndex;
+        if (daysUntil < 0) daysUntil += 7;
+
+        const date = new Date(today);
+        date.setDate(today.getDate() + daysUntil);
+        return date;
+    };
+
+    // Helper to show notifications
+    const showNotification = (message, type = 'success') => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification(null), 3000);
+    };
+
+    // --- Weekly Logic ---
+    const addWeeklySlot = (day) => {
+        setWeeklySlots([...weeklySlots, { day, startTime: '09:00', endTime: '17:00' }]);
+    };
+
+    const removeWeeklySlot = (index) => {
+        const newSlots = [...weeklySlots];
+        newSlots.splice(index, 1);
+        setWeeklySlots(newSlots);
+    };
+
+    const updateWeeklySlot = (index, field, value) => {
+        const newSlots = [...weeklySlots];
+        newSlots[index][field] = value;
+        setWeeklySlots(newSlots);
+    };
+
+    // --- Date Specific Logic ---
+    const formatDateKey = (date) => {
+        return date.toLocaleDateString('en-CA'); // YYYY-MM-DD
+    };
+
+    const getSlotsForDate = (date) => {
+        const key = formatDateKey(date);
+        return dateSpecificSlots[key] || [];
+    };
+
+    const addDateSlot = () => {
+        const key = formatDateKey(selectedDate);
+        const currentSlots = dateSpecificSlots[key] || [];
+        const newSlots = {
+            ...dateSpecificSlots,
+            [key]: [...currentSlots, { startTime: '09:00', endTime: '17:00' }]
+        };
+        setDateSpecificSlots(newSlots);
+    };
+
+    const removeDateSlot = (date, index) => {
+        const key = formatDateKey(date);
+        const currentSlots = [...(dateSpecificSlots[key] || [])];
+        currentSlots.splice(index, 1);
+
+        const newSlots = { ...dateSpecificSlots };
+        if (currentSlots.length === 0) {
+            delete newSlots[key];
+        } else {
+            newSlots[key] = currentSlots;
+        }
+        setDateSpecificSlots(newSlots);
+    };
+
+    const updateDateSlot = (date, index, field, value) => {
+        const key = formatDateKey(date);
+        const currentSlots = [...(dateSpecificSlots[key] || [])];
+        currentSlots[index][field] = value;
+
+        setDateSpecificSlots({
+            ...dateSpecificSlots,
+            [key]: currentSlots
+        });
+    };
+
+    // --- Save Logic ---
+    const handleSave = () => {
+        setIsSaving(true);
+        // Simulate API call
+        setTimeout(() => {
+            setMentor(prev => ({
+                ...prev,
+                availability: weeklySlots,
+                dateAvailability: dateSpecificSlots
+            }));
+            setIsSaving(false);
+            showNotification('Availability settings saved successfully!');
+        }, 800);
+    };
+
+    const handleDateClick = (day) => {
+        const date = getUpcomingDate(day);
+        setSelectedDate(date);
+        setActiveTab('dates');
+    };
+
+    const handleMarkUnavailable = (date, e) => {
+        e.stopPropagation();
+        const key = formatDateKey(date);
+        setDateSpecificSlots({
+            ...dateSpecificSlots,
+            [key]: []
+        });
+        showNotification('Date marked as unavailable');
+    };
+
+    return (
+        <div className="min-h-screen bg-slate-50/80 font-sans text-slate-900 pb-12">
+            {/* Reuse Calendar Styles from Sessions page */}
+            <style>{`
+        .custom-calendar.react-calendar { width: 100%; border: none; background: transparent; font-family: inherit; }
+        .custom-calendar .react-calendar__navigation { display: flex; height: 48px; margin-bottom: 1rem; align-items: center; }
+        .custom-calendar .react-calendar__navigation button { min-width: 44px; background: transparent; border-radius: 12px; font-weight: 700; font-size: 1rem; }
+        .custom-calendar .react-calendar__navigation button:enabled:hover { background-color: #f1f5f9; }
+        .custom-calendar .react-calendar__month-view__weekdays { text-align: center; text-transform: uppercase; font-weight: 700; font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem; }
+        .custom-calendar .react-calendar__month-view__weekdays__weekday abbr { text-decoration: none; }
+        .custom-calendar .react-calendar__tile { padding: 0.75rem 0.5rem; background: none; font-size: 0.875rem; font-weight: 500; color: #334155; border-radius: 9999px; height: 44px; display: flex; align-items: center; justify-content: center; }
+        .custom-calendar .react-calendar__tile:enabled:hover { background-color: #f1f5f9; color: #0f172a; }
+        .custom-calendar .react-calendar__tile--now { background-color: #e2e8f0; color: #0f172a; font-weight: 700; }
+        .custom-calendar .react-calendar__tile--active { background-color: #4f46e5 !important; color: white !important; font-weight: 700; box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39); }
+        .has-slots { position: relative; }
+        .has-slots::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #4f46e5; border-radius: 50%; }
+        
+        /* Custom Scrollbar for Time Picker */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+      `}</style>
+
+            {/* Header */}
+            <header className="px-8 py-8 bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Availability</h1>
+                    <p className="text-slate-500 mt-2 text-lg font-medium">Manage your weekly schedule and specific date overrides</p>
+                </div>
+                <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-slate-200 hover:shadow-indigo-200 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                    {isSaving ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                        <Save className="w-5 h-5" />
+                    )}
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+            </header>
+
+            {/* Notification Toast */}
+            {notification && (
+                <div className="fixed bottom-8 right-8 z-50 animate-in fade-in slide-in-from-bottom-4">
+                    <div className="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3">
+                        <div className="bg-green-500/20 p-1 rounded-full">
+                            <Check className="w-4 h-4 text-green-400" />
+                        </div>
+                        <p className="text-sm font-bold">{notification.message}</p>
+                    </div>
+                </div>
+            )}
+
+            <main className="max-w-7xl mx-auto px-8 py-8">
+
+                {/* Tabs */}
+                <div className="flex p-1 bg-white border border-slate-200 rounded-2xl w-fit mb-8 shadow-sm">
+                    <button
+                        onClick={() => setActiveTab('weekly')}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'weekly'
+                            ? 'bg-slate-900 text-white shadow-md'
+                            : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                            }`}
+                    >
+                        <Repeat className="w-4 h-4" />
+                        Weekly Schedule
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('dates')}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'dates'
+                            ? 'bg-slate-900 text-white shadow-md'
+                            : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                            }`}
+                    >
+                        <CalendarIcon className="w-4 h-4" />
+                        Specific Dates
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden min-h-[600px]">
+
+                    {activeTab === 'weekly' ? (
+                        <div className="p-8">
+                            <div className="flex items-center gap-3 mb-8 pb-6 border-b border-slate-100">
+                                <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                    <Clock className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-900">Weekly Recurring Schedule</h2>
+                                    <p className="text-slate-500 text-sm font-medium">Set your standard availability for each day of the week.</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                {daysOfWeek.map((day) => {
+                                    const daySlots = weeklySlots.filter(s => s.day === day);
+                                    const hasSlots = daySlots.length > 0;
+                                    const upcomingDate = getUpcomingDate(day);
+                                    const isBlocked = dateSpecificSlots[formatDateKey(upcomingDate)]?.length === 0;
+
+                                    return (
+                                        <div key={day} className={`group flex flex-col md:flex-row md:items-start gap-6 p-5 rounded-2xl border transition-all ${hasSlots ? 'bg-white border-slate-200' : 'bg-slate-50/50 border-slate-100'}`}>
+
+                                            {/* Day Label */}
+                                            <div className="w-32 pt-2 flex flex-col gap-1">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-3 h-3 rounded-full ${hasSlots ? 'bg-green-500' : 'bg-slate-300'}`}></div>
+                                                    <span className={`font-bold ${hasSlots ? 'text-slate-900' : 'text-slate-400'}`}>{day}</span>
+                                                </div>
+                                                <div className="pl-6 flex flex-col gap-1">
+                                                    <button
+                                                        onClick={() => handleDateClick(day)}
+                                                        className="flex items-center gap-1 text-xs text-slate-400 hover:text-blue-600 font-medium text-left transition-colors group/date"
+                                                        title="Manage specific date"
+                                                    >
+                                                        {upcomingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                        <CalendarIcon className="w-3 h-3 opacity-0 group-hover/date:opacity-100 transition-opacity" />
+                                                    </button>
+                                                    {isBlocked ? (
+                                                        <span className="text-[10px] font-bold text-red-500 flex items-center gap-1 bg-red-50 px-2 py-0.5 rounded-md w-fit">
+                                                            <Ban className="w-3 h-3" /> Unavailable
+                                                        </span>
+                                                    ) : (
+                                                        <button onClick={(e) => handleMarkUnavailable(upcomingDate, e)} className="text-[10px] font-medium text-slate-400 hover:text-red-500 flex items-center gap-1 transition-colors w-fit">
+                                                            <Ban className="w-3 h-3" /> Mark unavailable
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Slots Area */}
+                                            <div className="flex-1 space-y-3">
+                                                {hasSlots ? (
+                                                    daySlots.map((slot, idx) => {
+                                                        const realIndex = weeklySlots.indexOf(slot);
+                                                        return (
+                                                            <div key={idx} className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
+                                                                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-1.5 pl-3 shadow-sm hover:border-indigo-300 transition-colors focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/20">
+                                                                    <TimePicker
+                                                                        value={slot.startTime}
+                                                                        onChange={(val) => updateWeeklySlot(realIndex, 'startTime', val)}
+                                                                    />
+                                                                    <span className="text-slate-300 font-light">|</span>
+                                                                    <TimePicker
+                                                                        value={slot.endTime}
+                                                                        onChange={(val) => updateWeeklySlot(realIndex, 'endTime', val)}
+                                                                    />
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => removeWeeklySlot(realIndex)}
+                                                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <div className="pt-2 text-sm text-slate-400 italic">Unavailable</div>
+                                                )}
+                                            </div>
+
+                                            {/* Add Button */}
+                                            <button
+                                                onClick={() => addWeeklySlot(day)}
+                                                className="self-start md:self-center p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                title="Add time slot"
+                                            >
+                                                <Plus className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid lg:grid-cols-12 h-full min-h-[600px]">
+                            {/* Left: Calendar */}
+                            <div className="lg:col-span-5 p-8 border-r border-slate-100 bg-slate-50/30">
+                                <div className="mb-6">
+                                    <h2 className="text-xl font-bold text-slate-900">Select Date</h2>
+                                    <p className="text-slate-500 text-sm font-medium mt-1">Choose a date to add specific availability.</p>
+                                </div>
+
+                                <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                                    <Calendar
+                                        onChange={setSelectedDate}
+                                        value={selectedDate}
+                                        className="custom-calendar"
+                                        tileClassName={({ date }) => {
+                                            const key = formatDateKey(date);
+                                            return dateSpecificSlots[key] ? 'has-slots' : '';
+                                        }}
+                                    />
+                                </div>
+
+                                <div className="mt-6 p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex gap-3">
+                                    <AlertCircle className="w-5 h-5 text-indigo-600 shrink-0" />
+                                    <p className="text-xs text-indigo-800 font-medium leading-relaxed">
+                                        Adding slots to a specific date will override your weekly recurring schedule for that day.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Right: Slots for Selected Date */}
+                            <div className="lg:col-span-7 p-8 bg-white">
+                                <div className="flex items-center justify-between mb-8">
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                                            {selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                                            <span className="text-slate-400 font-normal text-lg">
+                                                {selectedDate.toLocaleDateString('en-US', { year: 'numeric' })}
+                                            </span>
+                                        </h2>
+                                        <p className="text-slate-500 text-sm font-medium mt-1">
+                                            {selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={addDateSlot}
+                                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-indigo-600 transition-colors shadow-sm"
+                                    >
+                                        <Plus className="w-4 h-4" /> Add Slot
+                                    </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {dateSpecificSlots[formatDateKey(selectedDate)]?.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-red-100 rounded-3xl bg-red-50/30">
+                                            <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 text-red-500">
+                                                <Ban className="w-8 h-8" />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-slate-900">Unavailable on this date</h3>
+                                            <p className="text-slate-500 text-sm max-w-xs mt-1">
+                                                You have explicitly marked this date as unavailable, overriding your weekly schedule.
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    const newSlots = { ...dateSpecificSlots };
+                                                    delete newSlots[formatDateKey(selectedDate)];
+                                                    setDateSpecificSlots(newSlots);
+                                                }}
+                                                className="mt-6 text-slate-600 font-bold text-sm hover:text-slate-900 underline"
+                                            >
+                                                Clear override (Use weekly schedule)
+                                            </button>
+                                        </div>
+                                    ) : getSlotsForDate(selectedDate).length > 0 ? (
+                                        getSlotsForDate(selectedDate).map((slot, idx) => (
+                                            <div key={idx} className="group flex items-center justify-between p-4 rounded-2xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all bg-white">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                                        <Clock className="w-5 h-5" />
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="relative">
+                                                            <TimePicker
+                                                                value={slot.startTime}
+                                                                onChange={(val) => updateDateSlot(selectedDate, idx, 'startTime', val)}
+                                                                className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-lg text-slate-900 focus:border-indigo-500 min-w-[100px]"
+                                                            />
+                                                            <span className="text-[10px] font-bold text-slate-400 absolute -top-3 left-0">START</span>
+                                                        </div>
+                                                        <ChevronRight className="w-4 h-4 text-slate-300" />
+                                                        <div className="relative">
+                                                            <TimePicker
+                                                                value={slot.endTime}
+                                                                onChange={(val) => updateDateSlot(selectedDate, idx, 'endTime', val)}
+                                                                className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-lg text-slate-900 focus:border-indigo-500 min-w-[100px]"
+                                                            />
+                                                            <span className="text-[10px] font-bold text-slate-400 absolute -top-3 left-0">END</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    onClick={() => removeDateSlot(selectedDate, idx)}
+                                                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                                >
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-slate-100 rounded-3xl bg-slate-50/50">
+                                            <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4">
+                                                <CalendarIcon className="w-8 h-8 text-slate-300" />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-slate-900">No specific slots</h3>
+                                            <p className="text-slate-500 text-sm max-w-xs mt-1">
+                                                You haven't set any specific availability for this date.
+                                                Your weekly schedule for <span className="font-bold text-slate-700">{selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}</span> will apply.
+                                            </p>
+                                            <button
+                                                onClick={addDateSlot}
+                                                className="mt-6 text-indigo-600 font-bold text-sm hover:underline"
+                                            >
+                                                Add an override for this date
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </main>
+        </div>
+    );
+}

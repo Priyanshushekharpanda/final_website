@@ -13,22 +13,22 @@ export const useMentor = () => {
 export const MentorProvider = ({ children }) => {
   const [mentor, setMentor] = useState({
     id: '1',
-    name: 'Ayman Shaltoni',
-    email: 'ayman@example.com',
+    name: 'Priyanshu Panda',
+    email: 'priyanshu@example.com',
     phone: '1234567890',
     title: 'Senior Software Engineer',
     about: 'Passionate mentor and developer.',
     skills: ['React', 'Node.js', 'Python'],
-    twitter: '@ayman',
-    instagram: '@ayman_dev',
-    linkedin: 'ayman-shaltoni',
+    twitter: '@priyanshu',
+    instagram: '@priyanshu_dev',
+    linkedin: 'priyanshu-panda',
     totalEarnings: '13,000',
     activeStudents: 24,
     sessionsCompleted: 142,
     rating: '4.9',
     responseTime: '2h',
-    location: 'Riyadh, SA',
-    experience: '5 Years'
+    location: 'Bhubaneswar, India',
+    experience: '2 Years'
   });
 
   const [profileImageUrl, setProfileImageUrl] = useState(null);

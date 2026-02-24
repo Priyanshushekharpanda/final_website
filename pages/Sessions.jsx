@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import Calendar from 'react-calendar';
 import { Link } from 'react-router-dom';
 import { Calendar as CalendarIcon, Clock, MapPin, Video, ChevronRight, ChevronLeft, RotateCcw, User } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
 import { useMentor } from '../context/MentorContext';
 
 // Mock upcoming sessions data
@@ -46,6 +55,16 @@ const upcomingSessionsData = [
     status: 'Upcoming',
     progress: 0
   },
+];
+
+const mentoringHoursData = [
+  { name: 'Mon', hours: 2.5 },
+  { name: 'Tue', hours: 3.0 },
+  { name: 'Wed', hours: 4.5 },
+  { name: 'Thu', hours: 2.0 },
+  { name: 'Fri', hours: 5.0 },
+  { name: 'Sat', hours: 6.5 },
+  { name: 'Sun', hours: 1.5 },
 ];
 
 export default function Sessions() {
@@ -180,8 +199,8 @@ export default function Sessions() {
       <header className="px-8 py-6 bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Sessions</h1>
-            <p className="text-slate-500 mt-1 text-base font-medium">Manage your mentoring schedule and upcoming calls</p>
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 tracking-tight">Sessions</h1>
+            <p className="text-slate-500 mt-2 text-lg font-medium">Manage your mentoring schedule and upcoming calls</p>
           </div>
           <button
             onClick={() => setSelectedDate(new Date())}
@@ -278,58 +297,59 @@ export default function Sessions() {
               )}
             </div>
 
-            {/* Pending Requests Card */}
+            {/* Mentoring Activity Graph */}
             <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-8">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-slate-900">Pending Requests</h3>
-                <span className="bg-rose-100 text-rose-600 text-xs font-bold px-2.5 py-1 rounded-full">2 New</span>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">Mentoring Activity</h3>
+                  <p className="text-sm text-slate-500 font-medium mt-1">Hours spent mentoring this week</p>
+                </div>
+                <select className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none font-bold cursor-pointer hover:bg-slate-100 transition-colors">
+                  <option>This Week</option>
+                  <option>Last Week</option>
+                  <option>Last Month</option>
+                </select>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:border-blue-200 hover:shadow-sm">
-                  <div className="flex items-center gap-4 mb-4 sm:mb-0">
-                    <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-base">
-                      JD
-                    </div>
-                    <div>
-                      <p className="text-base font-bold text-slate-900">John Doe</p>
-                      <p className="text-sm text-slate-500 font-medium">Python Basics • Tomorrow, 10 AM</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3 w-full sm:w-auto">
-                    <button className="flex-1 sm:flex-none px-5 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-blue-600 transition-colors shadow-sm">
-                      Accept
-                    </button>
-                    <button className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors">
-                      Decline
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:border-blue-200 hover:shadow-sm">
-                  <div className="flex items-center gap-4 mb-4 sm:mb-0">
-                    <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-base">
-                      AS
-                    </div>
-                    <div>
-                      <p className="text-base font-bold text-slate-900">Alice Smith</p>
-                      <p className="text-sm text-slate-500 font-medium">Career Advice • Fri, 2 PM</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3 w-full sm:w-auto">
-                    <button className="flex-1 sm:flex-none px-5 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-blue-600 transition-colors shadow-sm">
-                      Accept
-                    </button>
-                    <button className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors">
-                      Decline
-                    </button>
-                  </div>
-                </div>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={mentoringHoursData} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }}
+                      dy={10}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }}
+                      tickFormatter={(value) => `${value}h`}
+                    />
+                    <Tooltip
+                      cursor={{ fill: '#f8fafc' }}
+                      contentStyle={{
+                        borderRadius: '16px',
+                        border: 'none',
+                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                        padding: '12px 16px',
+                        fontWeight: 'bold',
+                        color: '#1e293b'
+                      }}
+                      formatter={(value) => [`${value} hours`, 'Mentored']}
+                    />
+                    <Bar
+                      dataKey="hours"
+                      fill="#4f46e5"
+                      radius={[6, 6, 6, 6]}
+                      barSize={40}
+                      activeBar={{ fill: '#4338ca' }}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-
-              <button className="w-full mt-6 py-3 text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors flex items-center justify-center gap-1 border-t border-slate-100">
-                View all requests <ChevronRight className="w-4 h-4" />
-              </button>
             </div>
 
             {/* Redesigned Table View: Your Availability */}
@@ -337,7 +357,7 @@ export default function Sessions() {
               <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 overflow-hidden">
                 <div className="flex items-center justify-between p-6 border-b border-slate-100">
                   <h3 className="text-xl font-bold text-slate-900">Your Availability</h3>
-                  <Link to="/profile" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                  <Link to="/availability" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
                     Manage Slots &rarr;
                   </Link>
                 </div>

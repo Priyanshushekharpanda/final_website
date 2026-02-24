@@ -8,6 +8,7 @@ import MyMentor from './pages/MyMentor';
 import Sessions from './pages/Sessions';
 import EditProfile from './pages/EditProfile';
 import ProfilePreview from './pages/ProfilePreview';
+import Availability from './pages/Availability';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="company" element={<CompanyProfile />} />
             <Route path="mentor" element={<MyMentor />} />
             <Route path="sessions" element={<Sessions />} />
+            <Route path="availability" element={<Availability />} />
             <Route path="profile" element={<EditProfile />} />
             <Route path="profile/preview" element={<ProfilePreview />} />
           </Route>

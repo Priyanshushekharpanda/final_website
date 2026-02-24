@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Briefcase, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Calendar, Briefcase, User, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { useMentor } from '../context/MentorContext';
 
 export default function Layout() {
@@ -13,6 +13,7 @@ export default function Layout() {
     { to: '/profile', icon: User, label: 'My Profile' },
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/sessions', icon: Calendar, label: 'Sessions' },
+    { to: '/availability', icon: Clock, label: 'Availability' },
   ];
 
   return (

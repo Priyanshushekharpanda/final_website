@@ -378,7 +378,7 @@ export default function EditProfile() {
       {/* ================= TOP HEADER ================= */}
       <div className="max-w-7xl mx-auto px-8 py-8 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Edit User Profile</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Your Profile</h1>
           <Link to="/profile/preview" className="flex items-center gap-1 text-[15px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
             Preview <ArrowUpRight className="w-4 h-4" strokeWidth={2.5} />
           </Link>
