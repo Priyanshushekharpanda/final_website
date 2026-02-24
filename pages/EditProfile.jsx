@@ -66,6 +66,12 @@ export default function EditProfile() {
     }
   }, [mentor?.availability]);
 
+  useEffect(() => {
+    if (mentor && !mentor.availability && slots.length > 0) {
+      setMentor(prev => ({ ...prev, availability: slots }));
+    }
+  }, [mentor]);
+
   const handleProfileImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;

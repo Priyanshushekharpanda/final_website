@@ -138,7 +138,7 @@ export default function Dashboard() {
         </div>
 
         {/* Main Content Split */}
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-4">
 
           {/* Chart Section */}
           <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
@@ -184,6 +184,44 @@ export default function Dashboard() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
+          </div>
+
+          {/* Availability Slots Section */}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-xl font-bold text-slate-900">Availability</h2>
+              <button onClick={() => navigate('/profile')} className="text-slate-400 hover:text-blue-600 transition-colors">
+                <ArrowUpRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 flex-1">
+              {(mentor?.availability || [
+                { day: 'Mon', startTime: '10:00 AM', endTime: '11:00 AM' },
+                { day: 'Wed', startTime: '02:00 PM', endTime: '03:00 PM' },
+                { day: 'Fri', startTime: '04:00 PM', endTime: '05:00 PM' },
+              ]).slice(0, 3).map((slot, idx) => (
+                <div key={idx} className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-xs font-bold text-blue-600 uppercase shrink-0">
+                    {slot.day.substring(0, 3)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{slot.startTime}</p>
+                    <div className="flex items-center gap-1 text-xs font-medium text-slate-500">
+                      <Clock className="w-3 h-3" />
+                      {slot.endTime}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => navigate('/profile')}
+              className="w-full mt-6 py-3 px-4 border-2 border-slate-100 hover:border-slate-200 text-slate-600 font-bold rounded-2xl transition-all"
+            >
+              Manage Slots
+            </button>
           </div>
 
           {/* Upcoming Sessions Section */}

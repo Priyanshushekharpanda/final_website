@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Calendar from 'react-calendar';
-import { Calendar as CalendarIcon, Clock, MapPin, Video, ChevronRight, RotateCcw } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Calendar as CalendarIcon, Clock, MapPin, Video, ChevronRight, ChevronLeft, RotateCcw, User } from 'lucide-react';
 import { useMentor } from '../context/MentorContext';
 
 // Mock upcoming sessions data
@@ -12,7 +13,8 @@ const upcomingSessionsData = [
     date: new Date(),
     topic: 'React Performance Tuning',
     duration: '60 min',
-    status: 'upcoming'
+    status: 'In progress',
+    progress: 84
   },
   {
     id: 2,
@@ -21,7 +23,8 @@ const upcomingSessionsData = [
     date: new Date(Date.now() + 86400000),
     topic: 'System Design Interview',
     duration: '45 min',
-    status: 'upcoming'
+    status: 'Upcoming',
+    progress: 0
   },
   {
     id: 3,
@@ -30,7 +33,8 @@ const upcomingSessionsData = [
     date: new Date(Date.now() + 172800000),
     topic: 'Resume Review',
     duration: '30 min',
-    status: 'upcoming'
+    status: 'Upcoming',
+    progress: 0
   },
   {
     id: 4,
@@ -39,7 +43,8 @@ const upcomingSessionsData = [
     date: new Date(Date.now() + 345600000),
     topic: 'Career Guidance',
     duration: '60 min',
-    status: 'upcoming'
+    status: 'Upcoming',
+    progress: 0
   },
 ];
 
@@ -47,6 +52,10 @@ export default function Sessions() {
   const { mentor } = useMentor();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [notification, setNotification] = useState(null);
+
+  // Get availability for selected date
+  const selectedDayName = selectedDate.toLocaleDateString('en-US', { weekday: 'long' });
+  const availableSlots = mentor?.availability?.filter(slot => slot.day === selectedDayName) || [];
 
   // Get sessions for selected date
   const sessionsOnSelectedDate = upcomingSessionsData.filter(
@@ -74,10 +83,8 @@ export default function Sessions() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
-      {/* Custom Styles for react-calendar 
-        Injecting here so it works instantly without touching your global CSS 
-      */}
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+      {/* Custom Styles for react-calendar */}
       <style>{`
         .custom-calendar.react-calendar {
           width: 100%;
@@ -85,14 +92,10 @@ export default function Sessions() {
           background: transparent;
           font-family: inherit;
         }
-
-        /* Essential Grid Layout for Calendar */
         .custom-calendar .react-calendar__month-view__days {
           display: flex !important;
           flex-wrap: wrap !important;
         }
-        
-        /* Navigation (Month/Year Header) */
         .custom-calendar .react-calendar__navigation {
           display: flex;
           height: 48px;
@@ -116,8 +119,6 @@ export default function Sessions() {
           background-color: transparent;
           color: #cbd5e1;
         }
-        
-        /* Weekday Headers (Su, Mo, Tu...) */
         .custom-calendar .react-calendar__month-view__weekdays {
           text-align: center;
           text-transform: uppercase;
@@ -128,13 +129,11 @@ export default function Sessions() {
           display: flex !important;
         }
         .custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
-          text-decoration: none; /* Removes the dotted underline */
+          text-decoration: none;
         }
         .custom-calendar .react-calendar__month-view__weekdays__weekday {
           flex: 1;
         }
-
-        /* Individual Day Tiles */
         .custom-calendar .react-calendar__tile {
           max-width: 100%;
           padding: 0.75rem 0.5rem;
@@ -144,32 +143,26 @@ export default function Sessions() {
           font-size: 0.875rem;
           font-weight: 500;
           color: #334155;
-          border-radius: 9999px; /* Perfect circles */
+          border-radius: 9999px;
           transition: all 0.2s ease;
           position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
           height: 44px;
-          flex: 0 0 14.2857% !important; /* 100% / 7 days */
+          flex: 0 0 14.2857% !important;
           overflow: hidden;
         }
-        
-        /* Tile Hover & Focus */
         .custom-calendar .react-calendar__tile:enabled:hover,
         .custom-calendar .react-calendar__tile:enabled:focus {
           background-color: #f1f5f9;
           color: #0f172a;
         }
-        
-        /* Today Tile */
         .custom-calendar .react-calendar__tile--now {
           background-color: #e2e8f0;
           color: #0f172a;
           font-weight: 700;
         }
-        
-        /* Selected Date Tile */
         .custom-calendar .react-calendar__tile--active,
         .custom-calendar .react-calendar__tile--active:enabled:hover,
         .custom-calendar .react-calendar__tile--active:enabled:focus {
@@ -178,23 +171,21 @@ export default function Sessions() {
           font-weight: 700;
           box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
         }
-
-        /* Adjacent Month Dates */
         .custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
           color: #cbd5e1;
         }
       `}</style>
 
       {/* Header */}
-      <header className="px-8 pt-8 pb-6 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="px-8 py-6 bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Sessions</h1>
-            <p className="text-slate-500 mt-1.5 font-medium">Manage your mentoring schedule</p>
+            <p className="text-slate-500 mt-1 text-base font-medium">Manage your mentoring schedule and upcoming calls</p>
           </div>
           <button
             onClick={() => setSelectedDate(new Date())}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 shadow-sm rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors self-start sm:self-auto"
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 shadow-sm rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all active:scale-95 self-start sm:self-auto"
           >
             <RotateCcw className="w-4 h-4" />
             Jump to Today
@@ -202,82 +193,55 @@ export default function Sessions() {
         </div>
       </header>
 
-      <main className="p-8 max-w-7xl mx-auto">
+      <main className="p-8 max-w-7xl mx-auto space-y-8">
+
+        {/* Top Section: Grid with Lists and Calendar */}
         <div className="grid gap-8 lg:grid-cols-12 flex-col-reverse lg:flex-row">
 
-          {/* Left Side - Calendar & Stats */}
-          <div className="lg:col-span-4 flex flex-col gap-6">
-
-            {/* Highly Styled Calendar */}
-            <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 p-7 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50">
-              <Calendar
-                onChange={setSelectedDate}
-                value={selectedDate}
-                className="custom-calendar"
-                prevLabel={<span className="text-xl">‹</span>}
-                nextLabel={<span className="text-xl">›</span>}
-                prev2Label={null} // Hides the "<<" double jump
-                next2Label={null} // Hides the ">>" double jump
-                tileClassName={({ date }) => {
-                  let classes = '';
-                  // If it has a session and is NOT the currently selected date, add a dot
-                  if (sessionDates.includes(date.toDateString()) && date.toDateString() !== selectedDate.toDateString()) {
-                    classes += ' font-bold text-blue-700 after:content-[""] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:bg-blue-500 after:rounded-full';
-                  }
-                  return classes;
-                }}
-              />
-            </div>
-
-            {/* Stats Card */}
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2rem] shadow-lg shadow-slate-900/10 border border-slate-800 p-7 text-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <CalendarIcon className="w-24 h-24" />
-              </div>
-              <p className="text-slate-300 text-sm font-medium mb-1 relative z-10">Total Mentoring Impact</p>
-              <div className="flex items-end gap-3 relative z-10">
-                <span className="text-4xl font-extrabold">{mentor?.sessionsCompleted || 0}</span>
-                <span className="text-slate-400 text-sm mb-1">completed sessions</span>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Right Side - Session Lists */}
+          {/* Left Side - Session Lists */}
           <div className="lg:col-span-8 space-y-8">
 
             {/* Spotlight: Selected Date Sessions */}
-            <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 p-8">
+            <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-8">
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
                     {selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}
-                    {isToday(selectedDate) && (
-                      <span className="text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-700 px-2.5 py-1 rounded-md">Today</span>
+                    {isToday(selectedDate) ? (
+                      <span className="text-xs font-bold uppercase tracking-wider bg-blue-600 text-white px-2.5 py-1 rounded-full shadow-sm shadow-blue-200">Today</span>
+                    ) : (
+                      <span className="text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full">Selected</span>
                     )}
                   </h2>
                   <p className="text-sm text-slate-500 font-medium mt-1">
                     {selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
-                <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100/50">
-                  <CalendarIcon className="w-5 h-5 text-blue-600" />
-                </div>
               </div>
 
               {sessionsOnSelectedDate.length > 0 ? (
                 <div className="space-y-4">
                   {sessionsOnSelectedDate.map((session) => (
-                    <div key={`selected-${session.id}`} className="relative flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-blue-50/50 border border-blue-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <div key={`selected-${session.id}`} className="group relative flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-2xl bg-white border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+                      <div className="absolute left-0 top-6 bottom-6 w-1 bg-blue-500 rounded-r-full"></div>
                       <div className="flex-1">
-                        <p className="font-bold text-slate-900 text-lg">{session.student}</p>
-                        <p className="text-sm text-blue-600 font-semibold mt-0.5">{session.topic}</p>
-                        <div className="flex items-center gap-4 mt-3 text-xs text-slate-600 font-medium">
-                          <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-bold text-slate-900 text-lg">{session.student}</h3>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide ${session.status === 'In progress' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-700'
+                            }`}>
+                            {session.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-slate-500 font-medium mb-4 flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                          {session.topic}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-slate-600 font-bold">
+                          <span className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-100 transition-colors">
                             <Clock className="w-3.5 h-3.5 text-blue-500" />
                             {session.time.split(', ')[1] || session.time}
                           </span>
-                          <span className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-1.5 px-2">
                             <MapPin className="w-3.5 h-3.5 text-slate-400" />
                             Online Video
                           </span>
@@ -285,8 +249,9 @@ export default function Sessions() {
                       </div>
                       <button
                         onClick={() => handleJoinCall(session)}
-                        className="relative mt-4 sm:mt-0 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all hover:shadow-blue-500/20 active:scale-95"
+                        className="relative mt-5 sm:mt-0 px-6 py-3 bg-slate-900 hover:bg-blue-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-slate-200 hover:shadow-blue-200 transition-all active:scale-95 flex items-center gap-2"
                       >
+                        <Video className="w-4 h-4" />
                         Join Call
                         {notification?.id === `join-${session.id}` && (
                           <div className="absolute bottom-full right-0 mb-2 w-max bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-lg shadow-xl z-50 animate-in fade-in slide-in-from-bottom-1">
@@ -304,53 +269,230 @@ export default function Sessions() {
                     <CalendarIcon className="w-7 h-7 text-slate-400" />
                   </div>
                   <p className="text-slate-900 font-semibold">No sessions scheduled</p>
-                  <p className="text-slate-500 text-sm mt-1 max-w-[250px]">You have a completely free schedule for this selected date.</p>
+                  <p className="text-slate-500 text-sm mt-1 max-w-[250px]">
+                    {availableSlots.length > 0
+                      ? `You have ${availableSlots.length} open slot${availableSlots.length === 1 ? '' : 's'} for this date.`
+                      : "You have no availability set for this date."}
+                  </p>
                 </div>
               )}
             </div>
 
-            {/* All Upcoming Sessions List */}
-            <div>
-              <div className="flex items-center justify-between mb-5 px-1">
-                <h3 className="text-lg font-bold text-slate-900">All Upcoming Sessions</h3>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-200/50 px-3 py-1 rounded-full">
-                  {upcomingSessionsData.length} Total
-                </span>
+            {/* Pending Requests Card */}
+            <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-slate-900">Pending Requests</h3>
+                <span className="bg-rose-100 text-rose-600 text-xs font-bold px-2.5 py-1 rounded-full">2 New</span>
               </div>
 
-              <div className="space-y-3">
-                {upcomingSessionsData.map((session) => (
-                  <div
-                    key={`all-${session.id}`}
-                    className="group flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200/60 hover:border-blue-400/40 hover:shadow-md transition-all duration-300 cursor-pointer"
-                  >
-                    <div className="h-12 w-12 rounded-xl bg-slate-50 group-hover:bg-blue-50 flex items-center justify-center border border-slate-100 group-hover:border-blue-100 transition-colors shrink-0">
-                      <Video className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition-colors" />
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:border-blue-200 hover:shadow-sm">
+                  <div className="flex items-center gap-4 mb-4 sm:mb-0">
+                    <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-base">
+                      JD
                     </div>
-
-                    <div className="flex-1">
-                      <h4 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                        {session.student}
-                      </h4>
-                      <p className="text-xs text-slate-500 font-medium mt-0.5">{session.topic}</p>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:flex-col sm:items-end gap-1 mt-2 sm:mt-0">
-                      <div className="text-left sm:text-right">
-                        <p className="text-sm font-bold text-slate-700">{session.time}</p>
-                        <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5 justify-start sm:justify-end">
-                          <Clock className="w-3 h-3" /> {session.duration}
-                        </p>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all hidden sm:block" />
+                    <div>
+                      <p className="text-base font-bold text-slate-900">John Doe</p>
+                      <p className="text-sm text-slate-500 font-medium">Python Basics • Tomorrow, 10 AM</p>
                     </div>
                   </div>
-                ))}
+                  <div className="flex gap-3 w-full sm:w-auto">
+                    <button className="flex-1 sm:flex-none px-5 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-blue-600 transition-colors shadow-sm">
+                      Accept
+                    </button>
+                    <button className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors">
+                      Decline
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:border-blue-200 hover:shadow-sm">
+                  <div className="flex items-center gap-4 mb-4 sm:mb-0">
+                    <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-base">
+                      AS
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-slate-900">Alice Smith</p>
+                      <p className="text-sm text-slate-500 font-medium">Career Advice • Fri, 2 PM</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 w-full sm:w-auto">
+                    <button className="flex-1 sm:flex-none px-5 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-blue-600 transition-colors shadow-sm">
+                      Accept
+                    </button>
+                    <button className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors">
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button className="w-full mt-6 py-3 text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors flex items-center justify-center gap-1 border-t border-slate-100">
+                View all requests <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Redesigned Table View: Your Availability */}
+            {availableSlots.length > 0 && (
+              <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 overflow-hidden">
+                <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                  <h3 className="text-xl font-bold text-slate-900">Your Availability</h3>
+                  <Link to="/profile" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                    Manage Slots &rarr;
+                  </Link>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-50/50">
+                      <tr className="border-b border-slate-100">
+                        <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">DAY</th>
+                        <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">TIME SLOT</th>
+                        <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">TYPE</th>
+                        <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {availableSlots.map((slot, index) => (
+                        <tr key={index} className="hover:bg-slate-50 transition-colors group">
+                          <td className="px-6 py-4 text-sm font-medium text-slate-700">{slot.day}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{slot.startTime} - {slot.endTime}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">Online</td>
+                          <td className="px-6 py-4">
+                            <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
+                              Open
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Right Side - Calendar & Stats */}
+          <div className="lg:col-span-4 flex flex-col gap-8">
+
+            {/* Highly Styled Calendar */}
+            <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50">
+              <Calendar
+                onChange={setSelectedDate}
+                value={selectedDate}
+                className="custom-calendar"
+                prevLabel={<span className="text-xl">‹</span>}
+                nextLabel={<span className="text-xl">›</span>}
+                prev2Label={null}
+                next2Label={null}
+                tileClassName={({ date }) => {
+                  let classes = '';
+                  if (sessionDates.includes(date.toDateString()) && date.toDateString() !== selectedDate.toDateString()) {
+                    classes += ' font-bold text-blue-700 after:content-[""] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:bg-blue-500 after:rounded-full';
+                  }
+                  return classes;
+                }}
+              />
+            </div>
+
+            {/* Stats Card */}
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl shadow-lg shadow-slate-900/10 border border-slate-800 p-7 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <CalendarIcon className="w-24 h-24" />
+              </div>
+              <p className="text-slate-300 text-sm font-medium mb-1 relative z-10">Total Mentoring Impact</p>
+              <div className="flex items-end gap-3 relative z-10">
+                <span className="text-4xl font-extrabold">{mentor?.sessionsCompleted || 0}</span>
+                <span className="text-slate-400 text-sm mb-1">completed sessions</span>
               </div>
             </div>
 
           </div>
+
         </div>
+
+        {/* Bottom Section: All Upcoming Sessions Table */}
+        <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 overflow-hidden">
+          <div className="flex items-center justify-between p-6 border-b border-slate-100">
+            <h3 className="text-xl font-bold text-slate-900">All Upcoming Sessions</h3>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-3 py-1 rounded-full">
+              {upcomingSessionsData.length} Total
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-slate-50/50">
+                <tr className="border-b border-slate-100">
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">TOPIC</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">STUDENT</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">PROGRESS</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">DATE</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">DURATION</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">STATUS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {upcomingSessionsData.map((session) => (
+                  <tr key={`all-${session.id}`} className="hover:bg-slate-50 transition-colors group">
+                    <td className="px-6 py-4 text-sm font-medium text-blue-500 hover:text-blue-600 cursor-pointer">
+                      {session.topic}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-semibold text-slate-700">{session.student}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                          {/* Mocking the progress bar to match visual request */}
+                          <div
+                            className="h-full bg-emerald-500 rounded-full"
+                            style={{ width: `${session.progress || 84}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-xs font-bold text-slate-600">{session.progress || 84}%</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {session.date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {session.duration}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${session.status === 'In progress'
+                        ? 'bg-emerald-50 text-emerald-600'
+                        : 'bg-blue-50 text-blue-600'
+                        }`}>
+                        {session.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Pagination Footer */}
+          <div className="p-4 border-t border-slate-100 flex items-center justify-end gap-4 text-sm text-slate-500 bg-slate-50/30">
+            <span className="font-medium">1-{upcomingSessionsData.length} of {upcomingSessionsData.length}</span>
+            <div className="flex gap-2">
+              <button className="px-4 py-2 border border-slate-200 bg-white rounded-lg text-slate-400 cursor-not-allowed flex items-center gap-1 font-medium hover:bg-slate-50 transition-colors">
+                <ChevronLeft className="w-4 h-4" /> Previous
+              </button>
+              <button className="px-4 py-2 border border-slate-200 bg-white rounded-lg text-blue-600 hover:bg-blue-50 flex items-center gap-1 font-medium transition-colors">
+                Next <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
       </main>
     </div>
   );

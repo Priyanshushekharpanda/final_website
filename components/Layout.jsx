@@ -9,25 +9,10 @@ export default function Layout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Grouping navigation to match the structured look of the reference image
-  const navGroups = [
-    {
-      title: 'Account details',
-      items: [
-        { to: '/profile', icon: User, label: 'My Profile' },
-      ]
-    },
-    {
-      title: 'Main Menu',
-      items: [
-        { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-      ]
-    },
-    {
-      title: 'Educational path',
-      items: [
-        { to: '/sessions', icon: Calendar, label: 'Sessions' },
-      ]
-    }
+  const navItems = [
+    { to: '/profile', icon: User, label: 'My Profile' },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/sessions', icon: Calendar, label: 'Sessions' },
   ];
 
   return (
@@ -113,40 +98,29 @@ export default function Layout() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 space-y-6 overflow-y-auto pb-6">
-          {navGroups.map((group, index) => (
-            <div key={index}>
-              {!isCollapsed && (
-                <h4 className="px-3 mb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
-                  {group.title}
-                </h4>
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-6">
+          {navItems.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              title={isCollapsed ? label : ''}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                  ? 'bg-[oklch(0.96_0.03_262.24)]/80 text-[oklch(0.546_0.245_262.24)]'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                } ${isCollapsed ? 'justify-center' : ''}`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon
+                    className={`w-5 h-5 ${isActive ? 'text-[oklch(0.546_0.245_262.24)]' : 'text-slate-400'}`}
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                  {!isCollapsed && label}
+                </>
               )}
-              <div className="space-y-1">
-                {group.items.map(({ to, icon: Icon, label }) => (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    title={isCollapsed ? label : ''}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
-                        ? 'bg-[oklch(0.96_0.03_262.24)]/80 text-[oklch(0.546_0.245_262.24)]'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                      } ${isCollapsed ? 'justify-center' : ''}`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <Icon
-                          className={`w-5 h-5 ${isActive ? 'text-[oklch(0.546_0.245_262.24)]' : 'text-slate-400'}`}
-                          strokeWidth={isActive ? 2.5 : 2}
-                        />
-                        {!isCollapsed && label}
-                      </>
-                    )}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
+            </NavLink>
           ))}
         </nav>
       </aside>
