@@ -10,7 +10,6 @@ import {
   Share2,
   Copy,
   Check,
-  User
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useMentor } from '../context/MentorContext';
@@ -62,7 +61,7 @@ export default function ProfilePreview() {
   };
 
   return (
-    <div className="max-w-[850px] mx-auto pb-12 pt-4 font-sans text-slate-900 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
+    <div className="max-w-[850px] mx-auto pb-12 pt-4 px-4 sm:px-6 font-sans text-slate-900 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
 
       {/* Top Navigation */}
       <div className="mb-6 flex items-center justify-between">
@@ -87,15 +86,15 @@ export default function ProfilePreview() {
             <div className="absolute bottom-[-50%] left-[-10%] w-64 h-64 bg-purple-500/30 rounded-full blur-3xl" />
           </div>
 
-          <div className="px-8 pb-10 relative">
+          <div className="px-6 sm:px-8 pb-10 relative">
 
             {/* Avatar & Interactive Share Group */}
-            <div className="relative inline-block -mt-20 mb-6 z-20">
-              <div className="w-36 h-36 rounded-full border-4 border-white bg-slate-100 shadow-md overflow-hidden relative z-10 flex items-center justify-center">
+            <div className="relative inline-block -mt-16 sm:-mt-20 mb-6 z-20">
+              <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-white bg-slate-100 shadow-md overflow-hidden relative z-10 flex items-center justify-center">
                 {profileImageUrl ? (
                   <img src={profileImageUrl} alt={safeMentor.name} className="w-full h-full object-cover" />
                 ) : (
-                  <User className="w-16 h-16 text-slate-300" />
+                  <img src="https://ui-avatars.com/api/?name=Ayman+Shaltoni&background=eef2ff&color=4f46e5" alt={safeMentor.name} className="w-full h-full object-cover" />
                 )}
               </div>
 
@@ -118,11 +117,11 @@ export default function ProfilePreview() {
               <div
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
-                className={`absolute left-full top-1/2 -translate-y-1/2 ml-5 transition-all duration-500 ease-out transform origin-left z-30 ${isQRVisible ? 'opacity-100 visible scale-100 translate-x-0' : 'opacity-0 invisible scale-95 -translate-x-4'}`}
+                className={`absolute left-1/2 -translate-x-1/2 top-full mt-4 sm:mt-0 sm:top-1/2 sm:-translate-y-1/2 sm:left-full sm:ml-5 transition-all duration-500 ease-out transform origin-top sm:origin-left z-30 ${isQRVisible ? 'opacity-100 visible scale-100 translate-x-0' : 'opacity-0 invisible scale-95 -translate-x-4'}`}
               >
 
                 {/* Invisible hover bridge covering the gap to the left */}
-                <div className="absolute w-8 h-full -left-6 top-0 pointer-events-auto" />
+                <div className="hidden sm:block absolute w-8 h-full -left-6 top-0 pointer-events-auto" />
 
                 <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-xl border border-slate-100 flex flex-col items-center gap-2 relative">
                   <div className="p-2 bg-white rounded-xl border border-slate-100 shadow-sm">
@@ -139,13 +138,13 @@ export default function ProfilePreview() {
                   </span>
 
                   {/* Arrow pointing to the Left */}
-                  <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white/95 border-l border-b border-slate-100 rotate-45" />
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 sm:left-auto sm:-left-2 sm:top-1/2 sm:-translate-y-1/2 w-4 h-4 bg-white/95 border-l border-t sm:border-t-0 sm:border-b border-slate-100 rotate-45" />
                 </div>
               </div>
             </div>
 
             {/* Profile Details */}
-            <div className={`max-w-3xl relative z-10 transition-all duration-500 ease-out ${isQRVisible ? 'translate-x-40' : ''}`}>
+            <div className={`max-w-3xl relative z-10 transition-all duration-500 ease-out ${isQRVisible ? 'sm:translate-x-40' : ''}`}>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-1">
                 {safeMentor.name}
               </h1>

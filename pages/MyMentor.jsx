@@ -46,7 +46,7 @@ export default function MyStudents() {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
-      <header className="px-8 pt-6 pb-4 bg-white/70 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-10">
+      <header className="px-4 sm:px-8 pt-6 pb-4 bg-white/70 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-10">
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <Users className="w-6 h-6 text-indigo-600" />
           My Students
@@ -54,7 +54,7 @@ export default function MyStudents() {
         <p className="text-slate-600 mt-1">Monitor the progress and activity of your assigned students</p>
       </header>
 
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {studentsData.map((student) => (
             <div key={student.id} className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50 transition-all duration-300">

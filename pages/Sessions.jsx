@@ -197,7 +197,7 @@ export default function Sessions() {
       `}</style>
 
       {/* Header */}
-      <header className="px-8 py-6 bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
+      <header className="px-4 sm:px-8 py-6 bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
             <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 tracking-tight">Sessions</h1>
@@ -213,7 +213,7 @@ export default function Sessions() {
         </div>
       </header>
 
-      <main className="p-8 max-w-7xl mx-auto space-y-8">
+      <main className="p-4 sm:p-8 max-w-7xl mx-auto space-y-8">
 
         {/* Top Section: Grid with Lists and Calendar */}
         <div className="grid gap-8 lg:grid-cols-12 flex-col-reverse lg:flex-row">
@@ -222,7 +222,7 @@ export default function Sessions() {
           <div className="lg:col-span-8 space-y-8">
 
             {/* Spotlight: Selected Date Sessions */}
-            <FadeIn delay={0.1} className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-8">
+            <FadeIn delay={0.1} className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-4 sm:p-8">
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
@@ -299,7 +299,7 @@ export default function Sessions() {
             </FadeIn>
 
             {/* Mentoring Activity Graph */}
-            <FadeIn delay={0.2} className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-8">
+            <FadeIn delay={0.2} className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-4 sm:p-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-xl font-bold text-slate-900">Mentoring Activity</h3>
@@ -373,7 +373,7 @@ export default function Sessions() {
                   <table className="w-full text-left border-collapse">
                     <thead className="bg-slate-50/50">
                       <tr className="border-b border-slate-100">
-                        <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">DAY</th>
+                        <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider sticky left-0 z-10 bg-slate-50">DAY</th>
                         <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">TIME SLOT</th>
                         <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">TYPE</th>
                         <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">STATUS</th>
@@ -382,7 +382,7 @@ export default function Sessions() {
                     <tbody className="divide-y divide-slate-50">
                       {availableSlots.map((slot, index) => (
                         <tr key={index} className="hover:bg-slate-50 transition-colors group">
-                          <td className="px-6 py-4 text-sm font-medium text-slate-700">{slot.day}</td>
+                          <td className="px-6 py-4 text-sm font-medium text-slate-700 sticky left-0 z-10 bg-white group-hover:bg-slate-50">{slot.day}</td>
                           <td className="px-6 py-4 text-sm text-slate-600">{slot.startTime} - {slot.endTime}</td>
                           <td className="px-6 py-4 text-sm text-slate-600">Online</td>
                           <td className="px-6 py-4">
@@ -454,7 +454,7 @@ export default function Sessions() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-slate-50/50">
                 <tr className="border-b border-slate-100">
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">TOPIC</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider sticky left-0 z-10 bg-slate-50">TOPIC</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">STUDENT</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">PROGRESS</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">DATE</th>
@@ -465,7 +465,7 @@ export default function Sessions() {
               <tbody className="divide-y divide-slate-50">
                 {upcomingSessionsData.map((session) => (
                   <tr key={`all-${session.id}`} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-6 py-4 text-sm font-medium text-blue-500 hover:text-blue-600 cursor-pointer">
+                    <td className="px-6 py-4 text-sm font-medium text-blue-500 hover:text-blue-600 cursor-pointer sticky left-0 z-10 bg-white group-hover:bg-slate-50">
                       {session.topic}
                     </td>
                     <td className="px-6 py-4">

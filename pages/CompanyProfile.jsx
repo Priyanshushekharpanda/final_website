@@ -18,14 +18,14 @@ export default function CompanyProfile() {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
-      <header className="px-8 pt-6 pb-4 bg-white/70 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-10">
+      <header className="px-4 sm:px-8 pt-6 pb-4 bg-white/70 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-10">
         <h1 className="text-2xl font-bold text-slate-900">Company Profile</h1>
         <p className="text-slate-600 mt-1">Manage your company or organization details</p>
       </header>
 
-      <div className="p-8 max-w-4xl mx-auto">
+      <div className="p-4 sm:p-8 max-w-4xl mx-auto">
         <FadeIn delay={0.1}>
-          <form onSubmit={handleSave} className="bg-white rounded-[24px] shadow-sm border border-slate-200 p-8">
+          <form onSubmit={handleSave} className="bg-white rounded-[24px] shadow-sm border border-slate-200 p-4 sm:p-8">
             <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100">
               <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-slate-300 text-slate-400 hover:bg-slate-50 hover:border-blue-400 hover:text-blue-500 transition-all cursor-pointer">
                 <Briefcase className="w-6 h-6" />
