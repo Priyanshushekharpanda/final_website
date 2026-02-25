@@ -10,8 +10,9 @@ import {
   MoreVertical
 } from 'lucide-react';
 import {
-  LineChart,
+  ComposedChart,
   Line,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -20,7 +21,7 @@ import {
 } from 'recharts';
 import { useMentor } from '../context/MentorContext';
 
-// Mock data for the chart and upcoming sessions (Replace with actual backend data)
+// Mock data
 const earningData = [
   { name: 'Jan', earnings: 1200 },
   { name: 'Feb', earnings: 1900 },
@@ -36,12 +37,24 @@ const upcomingSessions = [
   { id: 3, student: 'Elena Rodriguez', time: 'Thu, 4:30 PM', topic: 'Resume Review' },
 ];
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 text-white p-4 rounded-xl shadow-xl border border-slate-800">
+        <p className="text-sm font-medium text-slate-400 mb-1">{label}</p>
+        <p className="text-2xl font-bold">${payload[0].value}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function Dashboard() {
   const { mentor } = useMentor();
   const navigate = useNavigate();
   const [notification, setNotification] = useState(null);
 
-  // Fallback values in case mentor object doesn't have these yet
+  // Fallback values
   const totalEarnings = mentor?.totalEarnings || "13,000";
   const activeStudents = mentor?.activeStudents || 24;
 
@@ -138,7 +151,7 @@ export default function Dashboard() {
         </div>
 
         {/* Main Content Split */}
-        <div className="grid gap-6 lg:grid-cols-4">
+        <div className="grid gap-6 lg:grid-cols-3">
 
           {/* Chart Section */}
           <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
@@ -155,73 +168,78 @@ export default function Dashboard() {
             </div>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={earningData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                <ComposedChart data={earningData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                  <defs>
+                    {/* 1. Main Line Gradient: Blue -> Purple -> Pink */}
+                    <linearGradient id="colorGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />   {/* Blue */}
+                      <stop offset="50%" stopColor="#8b5cf6" stopOpacity={1} />   {/* Purple */}
+                      <stop offset="100%" stopColor="#ec4899" stopOpacity={1} />  {/* Pink */}
+                    </linearGradient>
+
+                    {/* 2. Area Fill Gradient: Soft purple to transparent */}
+                    <linearGradient id="fillGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    </linearGradient>
+
+                    {/* 3. Shadow for the line to give it depth */}
+                    <filter id="shadow" height="200%">
+                      <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#8b5cf6" floodOpacity="0.3" />
+                    </filter>
+                  </defs>
+
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+
                   <XAxis
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#64748b', fontSize: 14 }}
+                    tick={{ fill: '#94a3b8', fontSize: 12 }}
                     dy={10}
                   />
+
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#64748b', fontSize: 14 }}
+                    tick={{ fill: '#94a3b8', fontSize: 12 }}
                     tickFormatter={(value) => `$${value}`}
                   />
+
                   <Tooltip
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    content={<CustomTooltip />}
+                    cursor={{ stroke: '#8b5cf6', strokeWidth: 1, strokeDasharray: '4 4' }}
                   />
+
+                  <Area
+                    type="monotone"
+                    dataKey="earnings"
+                    stroke="none"
+                    fill="url(#fillGradient)"
+                  />
+
                   <Line
                     type="monotone"
                     dataKey="earnings"
-                    stroke="#2563eb"
-                    strokeWidth={4}
-                    dot={{ fill: '#2563eb', strokeWidth: 2, r: 6 }}
-                    activeDot={{ r: 8 }}
+                    stroke="url(#colorGradient)"
+                    strokeWidth={5}
+                    filter="url(#shadow)"
+                    dot={{
+                      fill: '#fff',
+                      stroke: '#a78bfa',
+                      strokeWidth: 3,
+                      r: 6
+                    }}
+                    activeDot={{
+                      fill: '#fff',
+                      stroke: '#ec4899',
+                      strokeWidth: 4,
+                      r: 8
+                    }}
                   />
-                </LineChart>
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
-          </div>
-
-          {/* Availability Slots Section */}
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 flex flex-col">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-bold text-slate-900">Availability</h2>
-              <button onClick={() => navigate('/availability')} className="text-slate-400 hover:text-blue-600 transition-colors">
-                <ArrowUpRight className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4 flex-1">
-              {(mentor?.availability || [
-                { day: 'Mon', startTime: '10:00 AM', endTime: '11:00 AM' },
-                { day: 'Wed', startTime: '02:00 PM', endTime: '03:00 PM' },
-                { day: 'Fri', startTime: '04:00 PM', endTime: '05:00 PM' },
-              ]).slice(0, 3).map((slot, idx) => (
-                <div key={idx} className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-xs font-bold text-blue-600 uppercase shrink-0">
-                    {slot.day.substring(0, 3)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900">{slot.startTime}</p>
-                    <div className="flex items-center gap-1 text-xs font-medium text-slate-500">
-                      <Clock className="w-3 h-3" />
-                      {slot.endTime}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={() => navigate('/availability')}
-              className="w-full mt-6 py-3 px-4 border-2 border-slate-100 hover:border-slate-200 text-slate-600 font-bold rounded-2xl transition-all"
-            >
-              Manage Slots
-            </button>
           </div>
 
           {/* Upcoming Sessions Section */}

@@ -20,7 +20,12 @@ import {
   Calendar,
   Clock,
   Trash2,
-  Plus
+  Plus,
+  Star,
+  Award,
+  Zap,
+  Shield,
+  Trophy
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 // Assuming you have this context, otherwise replace with standard useState
@@ -51,6 +56,37 @@ export default function EditProfile() {
   ]);
   const [newSlot, setNewSlot] = useState({ day: 'Monday', startTime: '', endTime: '' });
   const [editingSlotId, setEditingSlotId] = useState(null);
+
+  // Mock upcoming sessions for the profile page
+  const upcomingSessions = [
+    {
+      id: 1,
+      student: 'Sarah Jenkins',
+      time: 'Today, 2:00 PM',
+      topic: 'React Performance Tuning',
+      duration: '60 min',
+      status: 'Confirmed',
+      avatar: 'https://ui-avatars.com/api/?name=Sarah+Jenkins&background=e0e7ff&color=4f46e5'
+    },
+    {
+      id: 2,
+      student: 'Marcus Cole',
+      time: 'Tomorrow, 10:00 AM',
+      topic: 'System Design Interview',
+      duration: '45 min',
+      status: 'Pending',
+      avatar: 'https://ui-avatars.com/api/?name=Marcus+Cole&background=fef3c7&color=d97706'
+    },
+    {
+      id: 3,
+      student: 'Elena Rodriguez',
+      time: 'Thu, 4:30 PM',
+      topic: 'Resume Review',
+      duration: '30 min',
+      status: 'Confirmed',
+      avatar: 'https://ui-avatars.com/api/?name=Elena+Rodriguez&background=dcfce7&color=16a34a'
+    }
+  ];
 
   const countries = [
     { code: '+966', label: 'SA', color: 'bg-green-600' },
@@ -621,87 +657,6 @@ export default function EditProfile() {
               )}
             </div>
 
-            {/* Payment Details */}
-            <div className={getSectionClassName('payment')}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-extrabold text-slate-900">Payment Details</h3>
-                <button
-                  onClick={() => toggleSection('payment')}
-                  className={`p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 ${activeSection === 'payment'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
-                    }`}
-                >
-                  {activeSection === 'payment' ? <Check className="w-4 h-4" strokeWidth={3} /> : <Pen className="w-4 h-4" strokeWidth={2.5} />}
-                </button>
-              </div>
-
-              {activeSection === 'payment' ? (
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-[14px] font-bold text-slate-800 mb-2">Bank Name</label>
-                    <input
-                      type="text"
-                      value={mentor?.bankName || ''}
-                      onChange={(e) => updateField('bankName', e.target.value)}
-                      className={`block w-full px-4 py-3 border-2 ${errors.bankName ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.bankName ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
-                      placeholder="e.g. Chase Bank"
-                    />
-                    {errors.bankName && <p className="text-red-500 text-xs mt-1 font-bold">{errors.bankName}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-[14px] font-bold text-slate-800 mb-2">Account Number</label>
-                    <input
-                      type="text"
-                      value={mentor?.accountNumber || ''}
-                      onChange={(e) => updateField('accountNumber', e.target.value)}
-                      className={`block w-full px-4 py-3 border-2 ${errors.accountNumber ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.accountNumber ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
-                      placeholder="**** **** **** 1234"
-                    />
-                    {errors.accountNumber && <p className="text-red-500 text-xs mt-1 font-bold">{errors.accountNumber}</p>}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[14px] font-bold text-slate-800 mb-2">IFSC / SWIFT</label>
-                      <input
-                        type="text"
-                        value={mentor?.ifsc || ''}
-                        onChange={(e) => updateField('ifsc', e.target.value)}
-                        className={`block w-full px-4 py-3 border-2 ${errors.ifsc ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.ifsc ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
-                      />
-                      {errors.ifsc && <p className="text-red-500 text-xs mt-1 font-bold">{errors.ifsc}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-[14px] font-bold text-slate-800 mb-2">Account Holder</label>
-                      <input
-                        type="text"
-                        value={mentor?.accountHolder || ''}
-                        onChange={(e) => updateField('accountHolder', e.target.value)}
-                        className={`block w-full px-4 py-3 border-2 ${errors.accountHolder ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.accountHolder ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
-                      />
-                      {errors.accountHolder && <p className="text-red-500 text-xs mt-1 font-bold">{errors.accountHolder}</p>}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm text-blue-600">
-                    <CreditCard className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900">Chase Bank</p>
-                    <p className="text-xs font-semibold text-slate-500">**** **** **** 8829</p>
-                  </div>
-                  <div className="ml-auto px-3 py-1 bg-green-100 text-green-700 text-[11px] font-bold rounded-full">Verified</div>
-                </div>
-              )}
-            </div>
-
-          </div>
-
-          {/* --- RIGHT COLUMN --- */}
-          <div className="space-y-8">
-
             {/* Industry/Interests */}
             <div className={getSectionClassName('skills')}>
               <div className="flex items-center justify-between mb-6">
@@ -755,6 +710,66 @@ export default function EditProfile() {
                 </>
               )}
             </div>
+
+            {/* Badges & Rating Card */}
+            <div className="bg-white rounded-[24px] border border-slate-200 p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50 transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-extrabold text-slate-900">Badges & Impact</h3>
+                <div className="p-2.5 bg-slate-50 text-slate-400 rounded-full group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                  <Trophy className="w-5 h-5" strokeWidth={2.5} />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-8 mb-8">
+                <div className="flex flex-col">
+                  <span className="text-5xl font-black text-slate-900 tracking-tight">{mentor?.rating || '4.9'}</span>
+                  <div className="flex text-yellow-400 gap-0.5 my-2">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star key={i} className="w-4 h-4 fill-current" />
+                    ))}
+                  </div>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Rating</span>
+                </div>
+                <div className="w-px h-20 bg-slate-100"></div>
+                <div className="flex flex-col justify-center">
+                  <span className="text-5xl font-black text-slate-900 tracking-tight">{mentor?.sessionsCompleted || '142'}</span>
+                  <span className="text-sm font-bold text-slate-600 my-2">Sessions Completed</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Impact</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-yellow-50/50 hover:bg-yellow-50 transition-colors">
+                  <div className="p-2 rounded-xl bg-yellow-100 text-yellow-600">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold text-slate-700">Top Mentor</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-blue-50/50 hover:bg-blue-50 transition-colors">
+                  <div className="p-2 rounded-xl bg-blue-100 text-blue-600">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold text-slate-700">Super Active</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-purple-50/50 hover:bg-purple-50 transition-colors">
+                  <div className="p-2 rounded-xl bg-purple-100 text-purple-600">
+                    <Star className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold text-slate-700">5-Star Rating</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-green-50/50 hover:bg-green-50 transition-colors">
+                  <div className="p-2 rounded-xl bg-green-100 text-green-600">
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold text-slate-700">Verified</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* --- RIGHT COLUMN --- */}
+          <div className="space-y-8">
 
             {/* Add Your Slot */}
             <div className={getSectionClassName('slots')}>
@@ -845,6 +860,125 @@ export default function EditProfile() {
               )}
             </div>
 
+            {/* Payment Details */}
+            <div className={getSectionClassName('payment')}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-extrabold text-slate-900">Payment Details</h3>
+                <button
+                  onClick={() => toggleSection('payment')}
+                  className={`p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 ${activeSection === 'payment'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                    : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
+                    }`}
+                >
+                  {activeSection === 'payment' ? <Check className="w-4 h-4" strokeWidth={3} /> : <Pen className="w-4 h-4" strokeWidth={2.5} />}
+                </button>
+              </div>
+
+              {activeSection === 'payment' ? (
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-[14px] font-bold text-slate-800 mb-2">Bank Name</label>
+                    <input
+                      type="text"
+                      value={mentor?.bankName || ''}
+                      onChange={(e) => updateField('bankName', e.target.value)}
+                      className={`block w-full px-4 py-3 border-2 ${errors.bankName ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.bankName ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                      placeholder="e.g. Chase Bank"
+                    />
+                    {errors.bankName && <p className="text-red-500 text-xs mt-1 font-bold">{errors.bankName}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-[14px] font-bold text-slate-800 mb-2">Account Number</label>
+                    <input
+                      type="text"
+                      value={mentor?.accountNumber || ''}
+                      onChange={(e) => updateField('accountNumber', e.target.value)}
+                      className={`block w-full px-4 py-3 border-2 ${errors.accountNumber ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.accountNumber ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                      placeholder="**** **** **** 1234"
+                    />
+                    {errors.accountNumber && <p className="text-red-500 text-xs mt-1 font-bold">{errors.accountNumber}</p>}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[14px] font-bold text-slate-800 mb-2">IFSC / SWIFT</label>
+                      <input
+                        type="text"
+                        value={mentor?.ifsc || ''}
+                        onChange={(e) => updateField('ifsc', e.target.value)}
+                        className={`block w-full px-4 py-3 border-2 ${errors.ifsc ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.ifsc ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                      />
+                      {errors.ifsc && <p className="text-red-500 text-xs mt-1 font-bold">{errors.ifsc}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-[14px] font-bold text-slate-800 mb-2">Account Holder</label>
+                      <input
+                        type="text"
+                        value={mentor?.accountHolder || ''}
+                        onChange={(e) => updateField('accountHolder', e.target.value)}
+                        className={`block w-full px-4 py-3 border-2 ${errors.accountHolder ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.accountHolder ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                      />
+                      {errors.accountHolder && <p className="text-red-500 text-xs mt-1 font-bold">{errors.accountHolder}</p>}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm text-blue-600">
+                    <CreditCard className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">Chase Bank</p>
+                    <p className="text-xs font-semibold text-slate-500">**** **** **** 8829</p>
+                  </div>
+                  <div className="ml-auto px-3 py-1 bg-green-100 text-green-700 text-[11px] font-bold rounded-full">Verified</div>
+                </div>
+              )}
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ================= UPCOMING SESSIONS CARD ================= */}
+        <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 p-8 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50 transition-all duration-300">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-extrabold text-slate-900">Upcoming Sessions</h3>
+            <Link to="/sessions" className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+              View All <ArrowUpRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="space-y-4">
+            {upcomingSessions.map((session) => (
+              <div key={session.id} className="flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-sm transition-all group">
+                <div className="flex items-center gap-4 mb-4 md:mb-0">
+                  <img src={session.avatar} alt={session.student} className="w-12 h-12 rounded-full" />
+                  <div>
+                    <h4 className="text-base font-bold text-slate-900">{session.student}</h4>
+                    <p className="text-sm font-medium text-slate-500">{session.topic}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 md:gap-8">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+                    <Calendar className="w-4 h-4 text-slate-400" />
+                    {session.time}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+                    <Clock className="w-4 h-4 text-slate-400" />
+                    {session.duration}
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${session.status === 'Confirmed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                    }`}>
+                    {session.status}
+                  </span>
+                  <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all shadow-sm">
+                    Details
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

@@ -314,6 +314,12 @@ export default function Sessions() {
               <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={mentoringHoursData} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                    <defs>
+                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#6366f1" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#4338ca" stopOpacity={1} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis
                       dataKey="name"
@@ -342,10 +348,10 @@ export default function Sessions() {
                     />
                     <Bar
                       dataKey="hours"
-                      fill="#4f46e5"
+                      fill="url(#barGradient)"
                       radius={[6, 6, 6, 6]}
                       barSize={40}
-                      activeBar={{ fill: '#4338ca' }}
+                      activeBar={{ fill: '#312e81' }}
                     />
                   </BarChart>
                 </ResponsiveContainer>
