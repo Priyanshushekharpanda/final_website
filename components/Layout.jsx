@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Briefcase, User, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { LayoutDashboard, Calendar, Briefcase, User, ChevronLeft, ChevronRight, Clock, Menu, X } from 'lucide-react';
 import { useMentor } from '../context/MentorContext';
 
 export default function Layout() {
   const { mentor, profileImageUrl } = useMentor();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Grouping navigation to match the structured look of the reference image
   const navItems = [
@@ -18,15 +19,35 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900">
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 z-30 md:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`${isCollapsed ? 'w-[80px]' : 'w-[260px]'} bg-white border-r border-slate-200/60 fixed h-full z-20 hidden md:flex md:flex-col shadow-[4px_0_24px_rgba(0,0,0,0.01)] transition-all duration-300`}>
+      <aside className={`
+        fixed inset-y-0 left-0 z-40 bg-white border-r border-slate-200/60 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.01)] transition-all duration-300 ease-in-out
+        ${isCollapsed ? 'md:w-[80px]' : 'md:w-[260px]'}
+        ${isMobileMenuOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full md:translate-x-0'}
+      `}>
 
         {/* Collapse Toggle Button */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-9 bg-white border border-slate-200 rounded-full p-1 shadow-sm hover:bg-slate-50 text-slate-500 z-50"
+          className="absolute -right-3 top-9 bg-white border border-slate-200 rounded-full p-1 shadow-sm hover:bg-slate-50 text-slate-500 z-50 hidden md:flex"
         >
           {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+
+        {/* Mobile Close Button */}
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 md:hidden"
+        >
+          <X size={20} />
         </button>
 
         {/* Custom Logo Area */}
@@ -104,6 +125,7 @@ export default function Layout() {
             <NavLink
               key={to}
               to={to}
+              onClick={() => setIsMobileMenuOpen(false)}
               title={isCollapsed ? label : ''}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
@@ -128,9 +150,15 @@ export default function Layout() {
 
       {/* Main Content */}
       <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'md:ml-[80px]' : 'md:ml-[260px]'} min-h-screen flex flex-col`}>
-        {/* Optional subtle top header bar area */}
-        <header className="h-16 flex items-center justify-end px-8 md:hidden bg-white border-b border-slate-200">
-          {/* Mobile menu trigger could go here */}
+        {/* Mobile Header */}
+        <header className="h-16 flex items-center justify-between px-6 md:hidden bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20">
+          <div className="flex items-end gap-0">
+            <span className="text-xl font-bold text-slate-900 leading-none">ento</span>
+            <span className="text-xl font-bold text-[oklch(0.546_0.245_262.24)] leading-none">Mania</span>
+          </div>
+          <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -mr-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+            <Menu size={24} />
+          </button>
         </header>
 
         <main className="flex-1 p-6 md:p-8">

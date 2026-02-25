@@ -30,6 +30,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 // Assuming you have this context, otherwise replace with standard useState
 import { useMentor } from '../context/MentorContext';
+import FadeIn from '../components/FadeIn';
 
 export default function EditProfile() {
   const { mentor, setMentor, profileImageUrl, setProfileImageUrl } = useMentor();
@@ -37,6 +38,7 @@ export default function EditProfile() {
   const [copied, setCopied] = useState(false);
   const [isQRVisible, setIsQRVisible] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const timeoutRef = useRef(null);
 
   // Local state for the banner image
@@ -107,6 +109,11 @@ export default function EditProfile() {
       setMentor(prev => ({ ...prev, availability: slots }));
     }
   }, [mentor]);
+
+  // Simulate initial data fetching
+  useEffect(() => {
+    setTimeout(() => setIsLoading(false), 800);
+  }, []);
 
   const handleProfileImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -390,8 +397,69 @@ export default function EditProfile() {
     </div>
   );
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50/80 font-sans pb-16">
+        <div className="max-w-7xl mx-auto px-8 py-8 flex items-center justify-between">
+          <div className="h-8 w-48 bg-slate-200 rounded-lg animate-pulse"></div>
+          <div className="flex gap-4">
+            <div className="h-10 w-10 bg-slate-200 rounded-full animate-pulse"></div>
+            <div className="h-10 w-10 bg-slate-200 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-8 space-y-8">
+          {/* Profile Card Skeleton */}
+          <div className="bg-white rounded-[24px] border border-slate-200 h-[320px] overflow-hidden relative">
+            <div className="h-40 bg-slate-100 animate-pulse"></div>
+            <div className="px-8 pb-8 flex items-end gap-6 relative -mt-16">
+              <div className="w-36 h-36 rounded-full bg-slate-200 border-[6px] border-white animate-pulse shrink-0"></div>
+              <div className="flex-1 pb-4 space-y-3">
+                <div className="h-8 w-64 bg-slate-200 rounded-lg animate-pulse"></div>
+                <div className="h-5 w-40 bg-slate-200 rounded-lg animate-pulse"></div>
+                <div className="flex gap-4 pt-2">
+                  <div className="h-4 w-32 bg-slate-200 rounded animate-pulse"></div>
+                  <div className="h-4 w-32 bg-slate-200 rounded animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8">
+            <div className="space-y-8">
+              {/* Bio Skeleton */}
+              <div className="bg-white rounded-[24px] border border-slate-200 p-8 h-64">
+                <div className="flex justify-between mb-6">
+                  <div className="h-6 w-24 bg-slate-200 rounded animate-pulse"></div>
+                  <div className="h-8 w-8 bg-slate-200 rounded-full animate-pulse"></div>
+                </div>
+                <div className="space-y-3">
+                  <div className="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+                  <div className="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+                  <div className="h-4 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-8">
+              {/* Slots Skeleton */}
+              <div className="bg-white rounded-[24px] border border-slate-200 p-8 h-64">
+                <div className="flex justify-between mb-6">
+                  <div className="h-6 w-32 bg-slate-200 rounded animate-pulse"></div>
+                  <div className="h-8 w-8 bg-slate-200 rounded-full animate-pulse"></div>
+                </div>
+                <div className="space-y-4">
+                  <div className="h-16 w-full bg-slate-100 rounded-xl animate-pulse"></div>
+                  <div className="h-16 w-full bg-slate-100 rounded-xl animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50/80 font-sans text-slate-900 pb-16">
+    <div className="min-h-screen bg-slate-50/80 font-sans text-slate-900 pb-16 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
 
       <style>{`
         @keyframes shake {
@@ -440,187 +508,189 @@ export default function EditProfile() {
       <div className="max-w-7xl mx-auto px-8 space-y-8">
 
         {/* ================= HORIZONTAL PROFILE CARD ================= */}
-        <div className={`bg-white rounded-[24px] shadow-sm border border-slate-200 overflow-hidden transition-all duration-500 ease-out relative ${activeSection && activeSection !== 'personal'
-          ? 'opacity-40 blur-[2px] scale-[0.98] pointer-events-none grayscale-[0.5] z-0'
-          : isQRVisible || activeSection === 'personal' ? 'scale-[1.02] shadow-2xl ring-1 ring-slate-200 z-20' : 'z-0 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50'
-          }`}>
-          {/* Banner */}
-          <div className="h-40 w-full relative overflow-hidden">
-            {bannerImageUrl && (
-              <img src={bannerImageUrl} alt="Banner" className="absolute inset-0 w-full h-full object-cover z-0" />
-            )}
-            {!bannerImageUrl && (
-              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-[#f3c8f5] via-[#e2e8f0] to-[#bfdbfe] animate-pulse" style={{ animationDuration: '3s' }}>
-                <div className="absolute top-0 right-20 w-80 h-80 bg-[#f97316] rounded-full mix-blend-multiply opacity-60 -translate-y-20 translate-x-10 filter blur-[60px]"></div>
-                <div className="absolute bottom-[-60px] left-10 w-72 h-72 bg-[#4ade80] rounded-full mix-blend-multiply opacity-60 filter blur-[60px]"></div>
-              </div>
-            )}
-
-            <label className="absolute top-6 right-6 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition text-slate-700 cursor-pointer z-20">
-              <Camera className="w-4 h-4" strokeWidth={2.5} />
-              <input type="file" accept="image/*" className="hidden" onChange={handleBannerImageChange} />
-            </label>
-          </div>
-
-          {/* Horizontal Details Area */}
-          <div className="px-8 pb-8 flex flex-col md:flex-row items-center md:items-end justify-between gap-6 relative">
-
-            <div className="flex flex-col md:flex-row items-center md:items-end gap-6 w-full">
-              {/* Avatar Overlapping Banner */}
-              <div className="relative -mt-20 shrink-0 z-20">
-                <label className="block w-36 h-36 rounded-full border-[6px] border-white bg-[oklch(0.96_0.03_262.24)] shadow-md overflow-hidden relative z-10 cursor-pointer">
-                  <img
-                    src={profileImageUrl || "https://ui-avatars.com/api/?name=Ayman+Shaltoni&background=eef2ff&color=4f46e5"}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                    <Camera className="w-8 h-8 text-white" />
-                  </div>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleProfileImageChange} />
-                </label>
-
-                {/* Share Button */}
-                <button
-                  onClick={handleCopyLink}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
-                  type="button"
-                  className={`absolute bottom-2 right-2 z-30 p-2.5 rounded-full shadow-md transition-all duration-300 transform hover:scale-110 ${copied
-                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                    : isQRVisible
-                      ? 'bg-blue-600 text-white shadow-lg scale-110'
-                      : 'bg-white text-blue-600 hover:text-blue-700 hover:shadow-lg'
-                    }`}
-                >
-                  {copied ? <Check className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
-                </button>
-
-                {/* QR Code Popover */}
-                <div
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
-                  className={`absolute left-full top-1/2 -translate-y-1/2 ml-5 transition-all duration-500 ease-out transform origin-left z-30 ${isQRVisible ? 'opacity-100 visible scale-100 translate-x-0' : 'opacity-0 invisible scale-95 -translate-x-4'}`}
-                >
-                  <div className="absolute w-8 h-full -left-6 top-0 pointer-events-auto" />
-                  <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-xl border border-slate-100 flex flex-col items-center gap-2 relative">
-                    <div className="p-2 bg-white rounded-xl border border-slate-100 shadow-sm">
-                      <QRCodeSVG
-                        value={profileUrl}
-                        size={110}
-                        level="M"
-                        includeMargin={false}
-                        fgColor="#0f172a"
-                      />
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
-                      {copied ? 'Link Copied!' : 'Scan or Click'}
-                    </span>
-                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white/95 border-l border-b border-slate-100 rotate-45" />
-                  </div>
+        <FadeIn delay={0.1}>
+          <div className={`bg-white rounded-[24px] shadow-sm border border-slate-200 overflow-hidden transition-all duration-500 ease-out relative ${activeSection && activeSection !== 'personal'
+            ? 'opacity-40 blur-[2px] scale-[0.98] pointer-events-none grayscale-[0.5] z-0'
+            : isQRVisible || activeSection === 'personal' ? 'scale-[1.02] shadow-2xl ring-1 ring-slate-200 z-20' : 'z-0 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50'
+            }`}>
+            {/* Banner */}
+            <div className="h-40 w-full relative overflow-hidden">
+              {bannerImageUrl && (
+                <img src={bannerImageUrl} alt="Banner" className="absolute inset-0 w-full h-full object-cover z-0" />
+              )}
+              {!bannerImageUrl && (
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-[#f3c8f5] via-[#e2e8f0] to-[#bfdbfe] animate-pulse" style={{ animationDuration: '3s' }}>
+                  <div className="absolute top-0 right-20 w-80 h-80 bg-[#f97316] rounded-full mix-blend-multiply opacity-60 -translate-y-20 translate-x-10 filter blur-[60px]"></div>
+                  <div className="absolute bottom-[-60px] left-10 w-72 h-72 bg-[#4ade80] rounded-full mix-blend-multiply opacity-60 filter blur-[60px]"></div>
                 </div>
-              </div>
+              )}
 
-              <div className={`flex-1 flex flex-col w-full transition-all duration-500 ease-out ${isQRVisible ? 'md:pl-44' : ''}`}>
-
-                <div className="flex items-start justify-between w-full mb-4">
-                  {/* Name and Role Display / Edit Toggle */}
-                  <div className="text-center md:text-left flex-1">
-                    {activeSection === 'personal' ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full max-w-3xl">
-                        <div>
-                          <label className="block text-[13px] font-bold text-slate-500 mb-1.5">Full Name</label>
-                          <input
-                            type="text"
-                            value={mentor?.name || ''}
-                            onChange={(e) => updateField('name', e.target.value)}
-                            className={`block w-full px-4 py-2.5 border-2 ${errors.name ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.name ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-bold focus:ring-0 outline-none transition-colors`}
-                          />
-                          {errors.name && <p className="text-red-500 text-xs mt-1 font-bold">{errors.name}</p>}
-                        </div>
-                        <div>
-                          <label className="block text-[13px] font-bold text-slate-500 mb-1.5">Role</label>
-                          <input
-                            type="text"
-                            value={mentor?.title || ''}
-                            onChange={(e) => updateField('title', e.target.value)}
-                            className="block w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-[15px] text-slate-900 font-bold focus:ring-0 focus:border-blue-600 outline-none transition-colors"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[13px] font-bold text-slate-500 mb-1.5">Email</label>
-                          <input
-                            type="email"
-                            value={mentor?.email || ''}
-                            onChange={(e) => updateField('email', e.target.value)}
-                            className={`block w-full px-4 py-2.5 border-2 ${errors.email ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.email ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-bold focus:ring-0 outline-none transition-colors`}
-                          />
-                          {errors.email && <p className="text-red-500 text-xs mt-1 font-bold">{errors.email}</p>}
-                        </div>
-                        <div>
-                          <label className="block text-[13px] font-bold text-slate-500 mb-1.5">Phone</label>
-                          <div className={`flex border-2 ${errors.phone ? 'border-red-500 focus-within:border-red-500 animate-shake' : successAnimations.phone ? 'border-blue-600 animate-success' : 'border-slate-200 focus-within:border-blue-600'} rounded-xl transition-colors relative bg-white`}>
-                            <div
-                              className="flex items-center gap-1 px-3 border-r-2 border-slate-200 text-[14px] font-bold text-slate-700 cursor-pointer hover:bg-slate-50 rounded-l-xl"
-                              onClick={() => setIsPhoneDropdownOpen(!isPhoneDropdownOpen)}
-                            >
-                              <span>{selectedCountry.code}</span>
-                              <ChevronDown className="w-3 h-3 text-slate-400" strokeWidth={3} />
-                            </div>
-                            {isPhoneDropdownOpen && (
-                              <div className="absolute top-[110%] left-0 w-32 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden z-50">
-                                {countries.map((country) => (
-                                  <div
-                                    key={country.code}
-                                    className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 cursor-pointer transition-colors"
-                                    onClick={() => {
-                                      setSelectedCountry(country);
-                                      setIsPhoneDropdownOpen(false);
-                                    }}
-                                  >
-                                    <span className="text-[13px] font-bold text-slate-700">{country.code}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            <input
-                              type="tel"
-                              value={mentor?.phone || ''}
-                              onChange={(e) => updateField('phone', e.target.value)}
-                              className="block w-full px-4 py-2.5 text-[15px] text-slate-900 font-bold outline-none border-none bg-transparent rounded-r-xl"
-                            />
-                          </div>
-                          {errors.phone && <p className="text-red-500 text-xs mt-1 font-bold">{errors.phone}</p>}
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{mentor?.name || 'User Name'}</h2>
-                        <p className="text-[16px] font-bold text-slate-500 mt-1">{mentor?.title || 'Role Title'}</p>
-                        <div className="flex flex-wrap gap-4 mt-3 text-sm font-medium text-slate-400">
-                          <span className="flex items-center gap-1.5"><Mail className="w-4 h-4" /> {mentor?.email}</span>
-                          <span className="flex items-center gap-1.5"><User className="w-4 h-4" /> {selectedCountry.code} {mentor?.phone}</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Edit Button */}
-                  <button
-                    onClick={() => toggleSection('personal')}
-                    className={`p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 shrink-0 ml-4 ${activeSection === 'personal'
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 rotate-0'
-                      : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
-                      }`}
-                  >
-                    {activeSection === 'personal' ? <Check className="w-5 h-5" strokeWidth={3} /> : <Pen className="w-5 h-5" strokeWidth={2.5} />}
-                  </button>
-                </div>
-              </div>
+              <label className="absolute top-6 right-6 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition text-slate-700 cursor-pointer z-20">
+                <Camera className="w-4 h-4" strokeWidth={2.5} />
+                <input type="file" accept="image/*" className="hidden" onChange={handleBannerImageChange} />
+              </label>
             </div>
 
+            {/* Horizontal Details Area */}
+            <div className="px-8 pb-8 flex flex-col md:flex-row items-center md:items-end justify-between gap-6 relative">
+
+              <div className="flex flex-col md:flex-row items-center md:items-end gap-6 w-full">
+                {/* Avatar Overlapping Banner */}
+                <div className="relative -mt-20 shrink-0 z-20">
+                  <label className="block w-36 h-36 rounded-full border-[6px] border-white bg-[oklch(0.96_0.03_262.24)] shadow-md overflow-hidden relative z-10 cursor-pointer">
+                    <img
+                      src={profileImageUrl || "https://ui-avatars.com/api/?name=Ayman+Shaltoni&background=eef2ff&color=4f46e5"}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                      <Camera className="w-8 h-8 text-white" />
+                    </div>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleProfileImageChange} />
+                  </label>
+
+                  {/* Share Button */}
+                  <button
+                    onClick={handleCopyLink}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    type="button"
+                    className={`absolute bottom-2 right-2 z-30 p-2.5 rounded-full shadow-md transition-all duration-300 transform hover:scale-110 ${copied
+                      ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                      : isQRVisible
+                        ? 'bg-blue-600 text-white shadow-lg scale-110'
+                        : 'bg-white text-blue-600 hover:text-blue-700 hover:shadow-lg'
+                      }`}
+                  >
+                    {copied ? <Check className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                  </button>
+
+                  {/* QR Code Popover */}
+                  <div
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    className={`absolute left-full top-1/2 -translate-y-1/2 ml-5 transition-all duration-500 ease-out transform origin-left z-30 ${isQRVisible ? 'opacity-100 visible scale-100 translate-x-0' : 'opacity-0 invisible scale-95 -translate-x-4'}`}
+                  >
+                    <div className="absolute w-8 h-full -left-6 top-0 pointer-events-auto" />
+                    <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-xl border border-slate-100 flex flex-col items-center gap-2 relative">
+                      <div className="p-2 bg-white rounded-xl border border-slate-100 shadow-sm">
+                        <QRCodeSVG
+                          value={profileUrl}
+                          size={110}
+                          level="M"
+                          includeMargin={false}
+                          fgColor="#0f172a"
+                        />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                        {copied ? 'Link Copied!' : 'Scan or Click'}
+                      </span>
+                      <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white/95 border-l border-b border-slate-100 rotate-45" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`flex-1 flex flex-col w-full transition-all duration-500 ease-out ${isQRVisible ? 'md:pl-44' : ''}`}>
+
+                  <div className="flex items-start justify-between w-full mb-4">
+                    {/* Name and Role Display / Edit Toggle */}
+                    <div className="text-center md:text-left flex-1">
+                      {activeSection === 'personal' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full max-w-3xl">
+                          <div>
+                            <label className="block text-[13px] font-bold text-slate-500 mb-1.5">Full Name</label>
+                            <input
+                              type="text"
+                              value={mentor?.name || ''}
+                              onChange={(e) => updateField('name', e.target.value)}
+                              className={`block w-full px-4 py-2.5 border-2 ${errors.name ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.name ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-bold focus:ring-0 outline-none transition-colors`}
+                            />
+                            {errors.name && <p className="text-red-500 text-xs mt-1 font-bold">{errors.name}</p>}
+                          </div>
+                          <div>
+                            <label className="block text-[13px] font-bold text-slate-500 mb-1.5">Role</label>
+                            <input
+                              type="text"
+                              value={mentor?.title || ''}
+                              onChange={(e) => updateField('title', e.target.value)}
+                              className="block w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-[15px] text-slate-900 font-bold focus:ring-0 focus:border-blue-600 outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[13px] font-bold text-slate-500 mb-1.5">Email</label>
+                            <input
+                              type="email"
+                              value={mentor?.email || ''}
+                              onChange={(e) => updateField('email', e.target.value)}
+                              className={`block w-full px-4 py-2.5 border-2 ${errors.email ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.email ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-bold focus:ring-0 outline-none transition-colors`}
+                            />
+                            {errors.email && <p className="text-red-500 text-xs mt-1 font-bold">{errors.email}</p>}
+                          </div>
+                          <div>
+                            <label className="block text-[13px] font-bold text-slate-500 mb-1.5">Phone</label>
+                            <div className={`flex border-2 ${errors.phone ? 'border-red-500 focus-within:border-red-500 animate-shake' : successAnimations.phone ? 'border-blue-600 animate-success' : 'border-slate-200 focus-within:border-blue-600'} rounded-xl transition-colors relative bg-white`}>
+                              <div
+                                className="flex items-center gap-1 px-3 border-r-2 border-slate-200 text-[14px] font-bold text-slate-700 cursor-pointer hover:bg-slate-50 rounded-l-xl"
+                                onClick={() => setIsPhoneDropdownOpen(!isPhoneDropdownOpen)}
+                              >
+                                <span>{selectedCountry.code}</span>
+                                <ChevronDown className="w-3 h-3 text-slate-400" strokeWidth={3} />
+                              </div>
+                              {isPhoneDropdownOpen && (
+                                <div className="absolute top-[110%] left-0 w-32 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden z-50">
+                                  {countries.map((country) => (
+                                    <div
+                                      key={country.code}
+                                      className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 cursor-pointer transition-colors"
+                                      onClick={() => {
+                                        setSelectedCountry(country);
+                                        setIsPhoneDropdownOpen(false);
+                                      }}
+                                    >
+                                      <span className="text-[13px] font-bold text-slate-700">{country.code}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              <input
+                                type="tel"
+                                value={mentor?.phone || ''}
+                                onChange={(e) => updateField('phone', e.target.value)}
+                                className="block w-full px-4 py-2.5 text-[15px] text-slate-900 font-bold outline-none border-none bg-transparent rounded-r-xl"
+                              />
+                            </div>
+                            {errors.phone && <p className="text-red-500 text-xs mt-1 font-bold">{errors.phone}</p>}
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{mentor?.name || 'User Name'}</h2>
+                          <p className="text-[16px] font-bold text-slate-500 mt-1">{mentor?.title || 'Role Title'}</p>
+                          <div className="flex flex-wrap gap-4 mt-3 text-sm font-medium text-slate-400">
+                            <span className="flex items-center gap-1.5"><Mail className="w-4 h-4" /> {mentor?.email}</span>
+                            <span className="flex items-center gap-1.5"><User className="w-4 h-4" /> {selectedCountry.code} {mentor?.phone}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Edit Button */}
+                    <button
+                      onClick={() => toggleSection('personal')}
+                      className={`p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 shrink-0 ml-4 ${activeSection === 'personal'
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 rotate-0'
+                        : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
+                        }`}
+                    >
+                      {activeSection === 'personal' ? <Check className="w-5 h-5" strokeWidth={3} /> : <Pen className="w-5 h-5" strokeWidth={2.5} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
-        </div>
+        </FadeIn>
 
         {/* ================= 2-COLUMN SETTINGS GRID ================= */}
         <div className="grid lg:grid-cols-2 gap-8 items-start">
@@ -629,142 +699,148 @@ export default function EditProfile() {
           <div className="space-y-8">
 
             {/* Bio */}
-            <div className={getSectionClassName('bio')}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-extrabold text-slate-900">Bio</h3>
-                <button
-                  onClick={() => toggleSection('bio')}
-                  className={`p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 ${activeSection === 'bio'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
-                    }`}
-                >
-                  {activeSection === 'bio' ? <Check className="w-4 h-4" strokeWidth={3} /> : <Pen className="w-4 h-4" strokeWidth={2.5} />}
-                </button>
-              </div>
+            <FadeIn delay={0.2}>
+              <div className={getSectionClassName('bio')}>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-extrabold text-slate-900">Bio</h3>
+                  <button
+                    onClick={() => toggleSection('bio')}
+                    className={`p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 ${activeSection === 'bio'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                      : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
+                      }`}
+                  >
+                    {activeSection === 'bio' ? <Check className="w-4 h-4" strokeWidth={3} /> : <Pen className="w-4 h-4" strokeWidth={2.5} />}
+                  </button>
+                </div>
 
-              {activeSection === 'bio' ? (
-                <textarea
-                  value={mentor?.about || ''}
-                  onChange={(e) => updateField('about', e.target.value)}
-                  rows={5}
-                  className="w-full p-5 border-2 border-slate-200 rounded-xl text-[15px] text-slate-800 font-semibold leading-relaxed focus:ring-0 focus:border-blue-600 outline-none resize-none transition-colors"
-                />
-              ) : (
-                <p className="text-[15px] leading-relaxed text-slate-600 whitespace-pre-wrap">
-                  {mentor?.about || 'No bio added yet.'}
-                </p>
-              )}
-            </div>
+                {activeSection === 'bio' ? (
+                  <textarea
+                    value={mentor?.about || ''}
+                    onChange={(e) => updateField('about', e.target.value)}
+                    rows={5}
+                    className="w-full p-5 border-2 border-slate-200 rounded-xl text-[15px] text-slate-800 font-semibold leading-relaxed focus:ring-0 focus:border-blue-600 outline-none resize-none transition-colors"
+                  />
+                ) : (
+                  <p className="text-[15px] leading-relaxed text-slate-600 whitespace-pre-wrap">
+                    {mentor?.about || 'No bio added yet.'}
+                  </p>
+                )}
+              </div>
+            </FadeIn>
 
             {/* Industry/Interests */}
-            <div className={getSectionClassName('skills')}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-extrabold text-slate-900">Industry/Interests</h3>
-                <button
-                  onClick={() => toggleSection('skills')}
-                  className={`p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 ${activeSection === 'skills'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
-                    }`}
-                >
-                  {activeSection === 'skills' ? <Check className="w-4 h-4" strokeWidth={3} /> : <Pen className="w-4 h-4" strokeWidth={2.5} />}
-                </button>
-              </div>
+            <FadeIn delay={0.3}>
+              <div className={getSectionClassName('skills')}>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-extrabold text-slate-900">Industry/Interests</h3>
+                  <button
+                    onClick={() => toggleSection('skills')}
+                    className={`p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 ${activeSection === 'skills'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                      : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
+                      }`}
+                  >
+                    {activeSection === 'skills' ? <Check className="w-4 h-4" strokeWidth={3} /> : <Pen className="w-4 h-4" strokeWidth={2.5} />}
+                  </button>
+                </div>
 
-              <div className="flex flex-wrap gap-3 mb-8">
-                {mentor?.skills?.map((skill, i) => (
-                  <div key={i} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-[14px] font-bold border border-blue-200 shadow-sm">
-                    {skill}
-                    {activeSection === 'skills' && (
-                      <button onClick={() => removeSkill(i)} className="text-blue-500 hover:text-blue-800 bg-white rounded-full p-0.5 transition-colors">
-                        <X className="w-3.5 h-3.5" strokeWidth={3} />
+                <div className="flex flex-wrap gap-3 mb-8">
+                  {mentor?.skills?.map((skill, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-[14px] font-bold border border-blue-200 shadow-sm">
+                      {skill}
+                      {activeSection === 'skills' && (
+                        <button onClick={() => removeSkill(i)} className="text-blue-500 hover:text-blue-800 bg-white rounded-full p-0.5 transition-colors">
+                          <X className="w-3.5 h-3.5" strokeWidth={3} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {activeSection === 'skills' && (
+                  <>
+                    <div className="flex gap-3">
+                      <input
+                        type="text"
+                        value={newSkill}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (/^[a-zA-Z0-9\s.\-+#]*$/.test(val)) {
+                            setNewSkill(val);
+                            if (errors.skills) setErrors(prev => ({ ...prev, skills: '' }));
+                          }
+                        }}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
+                        placeholder="Type a skill..."
+                        className={`flex-1 px-4 py-3 border-2 ${errors.skills ? 'border-red-500 focus:border-red-500 animate-shake' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] font-bold text-slate-700 outline-none transition-colors`}
+                      />
+                      <button onClick={handleAddSkill} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors flex items-center gap-2">
+                        <Plus className="w-5 h-5" /> Add
                       </button>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                    {errors.skills && <p className="text-red-500 text-xs mt-1 font-bold">{errors.skills}</p>}
+                  </>
+                )}
               </div>
-
-              {activeSection === 'skills' && (
-                <>
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      value={newSkill}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (/^[a-zA-Z0-9\s.\-+#]*$/.test(val)) {
-                          setNewSkill(val);
-                          if (errors.skills) setErrors(prev => ({ ...prev, skills: '' }));
-                        }
-                      }}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
-                      placeholder="Type a skill..."
-                      className={`flex-1 px-4 py-3 border-2 ${errors.skills ? 'border-red-500 focus:border-red-500 animate-shake' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] font-bold text-slate-700 outline-none transition-colors`}
-                    />
-                    <button onClick={handleAddSkill} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors flex items-center gap-2">
-                      <Plus className="w-5 h-5" /> Add
-                    </button>
-                  </div>
-                  {errors.skills && <p className="text-red-500 text-xs mt-1 font-bold">{errors.skills}</p>}
-                </>
-              )}
-            </div>
+            </FadeIn>
 
             {/* Badges & Rating Card */}
-            <div className="bg-white rounded-[24px] border border-slate-200 p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50 transition-all duration-300 group">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-extrabold text-slate-900">Badges & Impact</h3>
-                <div className="p-2.5 bg-slate-50 text-slate-400 rounded-full group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                  <Trophy className="w-5 h-5" strokeWidth={2.5} />
+            <FadeIn delay={0.4}>
+              <div className="bg-white rounded-[24px] border border-slate-200 p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50 transition-all duration-300 group">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-extrabold text-slate-900">Badges & Impact</h3>
+                  <div className="p-2.5 bg-slate-50 text-slate-400 rounded-full group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                    <Trophy className="w-5 h-5" strokeWidth={2.5} />
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-8 mb-8">
-                <div className="flex flex-col">
-                  <span className="text-5xl font-black text-slate-900 tracking-tight">{mentor?.rating || '4.9'}</span>
-                  <div className="flex text-yellow-400 gap-0.5 my-2">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
+                <div className="flex items-center gap-8 mb-8">
+                  <div className="flex flex-col">
+                    <span className="text-5xl font-black text-slate-900 tracking-tight">{mentor?.rating || '4.9'}</span>
+                    <div className="flex text-yellow-400 gap-0.5 my-2">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <Star key={i} className="w-4 h-4 fill-current" />
+                      ))}
+                    </div>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Rating</span>
                   </div>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Rating</span>
+                  <div className="w-px h-20 bg-slate-100"></div>
+                  <div className="flex flex-col justify-center">
+                    <span className="text-5xl font-black text-slate-900 tracking-tight">{mentor?.sessionsCompleted || '142'}</span>
+                    <span className="text-sm font-bold text-slate-600 my-2">Sessions Completed</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Impact</span>
+                  </div>
                 </div>
-                <div className="w-px h-20 bg-slate-100"></div>
-                <div className="flex flex-col justify-center">
-                  <span className="text-5xl font-black text-slate-900 tracking-tight">{mentor?.sessionsCompleted || '142'}</span>
-                  <span className="text-sm font-bold text-slate-600 my-2">Sessions Completed</span>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Impact</span>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-yellow-50/50 hover:bg-yellow-50 transition-colors">
-                  <div className="p-2 rounded-xl bg-yellow-100 text-yellow-600">
-                    <Award className="w-5 h-5" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-yellow-50/50 hover:bg-yellow-50 transition-colors">
+                    <div className="p-2 rounded-xl bg-yellow-100 text-yellow-600">
+                      <Award className="w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-bold text-slate-700">Top Mentor</span>
                   </div>
-                  <span className="text-sm font-bold text-slate-700">Top Mentor</span>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-blue-50/50 hover:bg-blue-50 transition-colors">
-                  <div className="p-2 rounded-xl bg-blue-100 text-blue-600">
-                    <Zap className="w-5 h-5" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-blue-50/50 hover:bg-blue-50 transition-colors">
+                    <div className="p-2 rounded-xl bg-blue-100 text-blue-600">
+                      <Zap className="w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-bold text-slate-700">Super Active</span>
                   </div>
-                  <span className="text-sm font-bold text-slate-700">Super Active</span>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-purple-50/50 hover:bg-purple-50 transition-colors">
-                  <div className="p-2 rounded-xl bg-purple-100 text-purple-600">
-                    <Star className="w-5 h-5" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-purple-50/50 hover:bg-purple-50 transition-colors">
+                    <div className="p-2 rounded-xl bg-purple-100 text-purple-600">
+                      <Star className="w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-bold text-slate-700">5-Star Rating</span>
                   </div>
-                  <span className="text-sm font-bold text-slate-700">5-Star Rating</span>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-green-50/50 hover:bg-green-50 transition-colors">
-                  <div className="p-2 rounded-xl bg-green-100 text-green-600">
-                    <Shield className="w-5 h-5" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-green-50/50 hover:bg-green-50 transition-colors">
+                    <div className="p-2 rounded-xl bg-green-100 text-green-600">
+                      <Shield className="w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-bold text-slate-700">Verified</span>
                   </div>
-                  <span className="text-sm font-bold text-slate-700">Verified</span>
                 </div>
               </div>
-            </div>
+            </FadeIn>
 
           </div>
 
@@ -772,215 +848,221 @@ export default function EditProfile() {
           <div className="space-y-8">
 
             {/* Add Your Slot */}
-            <div className={getSectionClassName('slots')}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-extrabold text-slate-900">Availability Slots</h3>
-                <button
-                  onClick={() => toggleSection('slots')}
-                  className={`relative p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 ${activeSection === 'slots'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
-                    }`}
-                >
-                  {activeSection === 'slots' ? <Check className="w-4 h-4" strokeWidth={3} /> : <Pen className="w-4 h-4" strokeWidth={2.5} />}
-                  {notification?.id === 'slots' && <NotificationPopup message={notification.message} />}
-                </button>
-              </div>
+            <FadeIn delay={0.2}>
+              <div className={getSectionClassName('slots')}>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-extrabold text-slate-900">Availability Slots</h3>
+                  <button
+                    onClick={() => toggleSection('slots')}
+                    className={`relative p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 ${activeSection === 'slots'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                      : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
+                      }`}
+                  >
+                    {activeSection === 'slots' ? <Check className="w-4 h-4" strokeWidth={3} /> : <Pen className="w-4 h-4" strokeWidth={2.5} />}
+                    {notification?.id === 'slots' && <NotificationPopup message={notification.message} />}
+                  </button>
+                </div>
 
-              <div className="space-y-3 mb-6">
-                {slots.map((slot) => (
-                  <div key={slot.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/50 group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                        <Calendar className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">{slot.day}</p>
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-                          <Clock className="w-3 h-3" />
-                          {slot.startTime} - {slot.endTime}
+                <div className="space-y-3 mb-6">
+                  {slots.map((slot) => (
+                    <div key={slot.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/50 group">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                          <Calendar className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{slot.day}</p>
+                          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                            <Clock className="w-3 h-3" />
+                            {slot.startTime} - {slot.endTime}
+                          </div>
                         </div>
                       </div>
+                      {activeSection === 'slots' && (
+                        <div className="flex gap-2">
+                          <button onClick={() => handleEditSlot(slot)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                            <Pen className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => removeSlot(slot.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    {activeSection === 'slots' && (
-                      <div className="flex gap-2">
-                        <button onClick={() => handleEditSlot(slot)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                          <Pen className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => removeSlot(slot.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {activeSection === 'slots' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-3">
-                    <select
-                      value={newSlot.day}
-                      onChange={(e) => setNewSlot({ ...newSlot, day: e.target.value })}
-                      className="col-span-1 px-3 py-2.5 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-blue-600"
-                    >
-                      <option value="Monday">Mon</option>
-                      <option value="Tuesday">Tue</option>
-                      <option value="Wednesday">Wed</option>
-                      <option value="Thursday">Thu</option>
-                      <option value="Friday">Fri</option>
-                      <option value="Saturday">Sat</option>
-                      <option value="Sunday">Sun</option>
-                    </select>
-                    <input
-                      type="time"
-                      value={newSlot.startTime}
-                      onChange={(e) => setNewSlot({ ...newSlot, startTime: e.target.value })}
-                      className="col-span-1 px-3 py-2.5 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-blue-600"
-                    />
-                    <input
-                      type="time"
-                      value={newSlot.endTime}
-                      onChange={(e) => setNewSlot({ ...newSlot, endTime: e.target.value })}
-                      className="col-span-1 px-3 py-2.5 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-blue-600"
-                    />
-                  </div>
-                  <div className="flex gap-3">
-                    <button onClick={addSlot} className="relative flex-1 py-3 border-2 border-dashed border-slate-300 rounded-xl text-[14px] font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center justify-center gap-2">
-                      {editingSlotId ? <><Check className="w-4 h-4" /> Update Slot</> : <><Plus className="w-4 h-4" /> Add New Slot</>}
-                      {notification?.id === 'add-slot' && <NotificationPopup message={notification.message} />}
-                    </button>
-                    {editingSlotId && (
-                      <button onClick={handleCancelEdit} className="px-6 py-3 border-2 border-slate-200 rounded-xl text-[14px] font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all">
-                        Cancel
-                      </button>
-                    )}
-                  </div>
+                  ))}
                 </div>
-              )}
-            </div>
+
+                {activeSection === 'slots' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      <select
+                        value={newSlot.day}
+                        onChange={(e) => setNewSlot({ ...newSlot, day: e.target.value })}
+                        className="col-span-1 px-3 py-2.5 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-blue-600"
+                      >
+                        <option value="Monday">Mon</option>
+                        <option value="Tuesday">Tue</option>
+                        <option value="Wednesday">Wed</option>
+                        <option value="Thursday">Thu</option>
+                        <option value="Friday">Fri</option>
+                        <option value="Saturday">Sat</option>
+                        <option value="Sunday">Sun</option>
+                      </select>
+                      <input
+                        type="time"
+                        value={newSlot.startTime}
+                        onChange={(e) => setNewSlot({ ...newSlot, startTime: e.target.value })}
+                        className="col-span-1 px-3 py-2.5 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-blue-600"
+                      />
+                      <input
+                        type="time"
+                        value={newSlot.endTime}
+                        onChange={(e) => setNewSlot({ ...newSlot, endTime: e.target.value })}
+                        className="col-span-1 px-3 py-2.5 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-blue-600"
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <button onClick={addSlot} className="relative flex-1 py-3 border-2 border-dashed border-slate-300 rounded-xl text-[14px] font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center justify-center gap-2">
+                        {editingSlotId ? <><Check className="w-4 h-4" /> Update Slot</> : <><Plus className="w-4 h-4" /> Add New Slot</>}
+                        {notification?.id === 'add-slot' && <NotificationPopup message={notification.message} />}
+                      </button>
+                      {editingSlotId && (
+                        <button onClick={handleCancelEdit} className="px-6 py-3 border-2 border-slate-200 rounded-xl text-[14px] font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all">
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </FadeIn>
 
             {/* Payment Details */}
-            <div className={getSectionClassName('payment')}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-extrabold text-slate-900">Payment Details</h3>
-                <button
-                  onClick={() => toggleSection('payment')}
-                  className={`p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 ${activeSection === 'payment'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
-                    }`}
-                >
-                  {activeSection === 'payment' ? <Check className="w-4 h-4" strokeWidth={3} /> : <Pen className="w-4 h-4" strokeWidth={2.5} />}
-                </button>
-              </div>
+            <FadeIn delay={0.3}>
+              <div className={getSectionClassName('payment')}>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-extrabold text-slate-900">Payment Details</h3>
+                  <button
+                    onClick={() => toggleSection('payment')}
+                    className={`p-2.5 rounded-full transition-all duration-300 transform hover:scale-110 ${activeSection === 'payment'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                      : 'bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
+                      }`}
+                  >
+                    {activeSection === 'payment' ? <Check className="w-4 h-4" strokeWidth={3} /> : <Pen className="w-4 h-4" strokeWidth={2.5} />}
+                  </button>
+                </div>
 
-              {activeSection === 'payment' ? (
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-[14px] font-bold text-slate-800 mb-2">Bank Name</label>
-                    <input
-                      type="text"
-                      value={mentor?.bankName || ''}
-                      onChange={(e) => updateField('bankName', e.target.value)}
-                      className={`block w-full px-4 py-3 border-2 ${errors.bankName ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.bankName ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
-                      placeholder="e.g. Chase Bank"
-                    />
-                    {errors.bankName && <p className="text-red-500 text-xs mt-1 font-bold">{errors.bankName}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-[14px] font-bold text-slate-800 mb-2">Account Number</label>
-                    <input
-                      type="text"
-                      value={mentor?.accountNumber || ''}
-                      onChange={(e) => updateField('accountNumber', e.target.value)}
-                      className={`block w-full px-4 py-3 border-2 ${errors.accountNumber ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.accountNumber ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
-                      placeholder="**** **** **** 1234"
-                    />
-                    {errors.accountNumber && <p className="text-red-500 text-xs mt-1 font-bold">{errors.accountNumber}</p>}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
+                {activeSection === 'payment' ? (
+                  <div className="space-y-5">
                     <div>
-                      <label className="block text-[14px] font-bold text-slate-800 mb-2">IFSC / SWIFT</label>
+                      <label className="block text-[14px] font-bold text-slate-800 mb-2">Bank Name</label>
                       <input
                         type="text"
-                        value={mentor?.ifsc || ''}
-                        onChange={(e) => updateField('ifsc', e.target.value)}
-                        className={`block w-full px-4 py-3 border-2 ${errors.ifsc ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.ifsc ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                        value={mentor?.bankName || ''}
+                        onChange={(e) => updateField('bankName', e.target.value)}
+                        className={`block w-full px-4 py-3 border-2 ${errors.bankName ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.bankName ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                        placeholder="e.g. Chase Bank"
                       />
-                      {errors.ifsc && <p className="text-red-500 text-xs mt-1 font-bold">{errors.ifsc}</p>}
+                      {errors.bankName && <p className="text-red-500 text-xs mt-1 font-bold">{errors.bankName}</p>}
                     </div>
                     <div>
-                      <label className="block text-[14px] font-bold text-slate-800 mb-2">Account Holder</label>
+                      <label className="block text-[14px] font-bold text-slate-800 mb-2">Account Number</label>
                       <input
                         type="text"
-                        value={mentor?.accountHolder || ''}
-                        onChange={(e) => updateField('accountHolder', e.target.value)}
-                        className={`block w-full px-4 py-3 border-2 ${errors.accountHolder ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.accountHolder ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                        value={mentor?.accountNumber || ''}
+                        onChange={(e) => updateField('accountNumber', e.target.value)}
+                        className={`block w-full px-4 py-3 border-2 ${errors.accountNumber ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.accountNumber ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                        placeholder="**** **** **** 1234"
                       />
-                      {errors.accountHolder && <p className="text-red-500 text-xs mt-1 font-bold">{errors.accountHolder}</p>}
+                      {errors.accountNumber && <p className="text-red-500 text-xs mt-1 font-bold">{errors.accountNumber}</p>}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[14px] font-bold text-slate-800 mb-2">IFSC / SWIFT</label>
+                        <input
+                          type="text"
+                          value={mentor?.ifsc || ''}
+                          onChange={(e) => updateField('ifsc', e.target.value)}
+                          className={`block w-full px-4 py-3 border-2 ${errors.ifsc ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.ifsc ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                        />
+                        {errors.ifsc && <p className="text-red-500 text-xs mt-1 font-bold">{errors.ifsc}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-[14px] font-bold text-slate-800 mb-2">Account Holder</label>
+                        <input
+                          type="text"
+                          value={mentor?.accountHolder || ''}
+                          onChange={(e) => updateField('accountHolder', e.target.value)}
+                          className={`block w-full px-4 py-3 border-2 ${errors.accountHolder ? 'border-red-500 focus:border-red-500 animate-shake' : successAnimations.accountHolder ? 'border-blue-600 animate-success' : 'border-slate-200 focus:border-blue-600'} rounded-xl text-[15px] text-slate-900 font-semibold outline-none transition-colors`}
+                        />
+                        {errors.accountHolder && <p className="text-red-500 text-xs mt-1 font-bold">{errors.accountHolder}</p>}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm text-blue-600">
-                    <CreditCard className="w-6 h-6" />
+                ) : (
+                  <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm text-blue-600">
+                      <CreditCard className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900">Chase Bank</p>
+                      <p className="text-xs font-semibold text-slate-500">**** **** **** 8829</p>
+                    </div>
+                    <div className="ml-auto px-3 py-1 bg-green-100 text-green-700 text-[11px] font-bold rounded-full">Verified</div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900">Chase Bank</p>
-                    <p className="text-xs font-semibold text-slate-500">**** **** **** 8829</p>
-                  </div>
-                  <div className="ml-auto px-3 py-1 bg-green-100 text-green-700 text-[11px] font-bold rounded-full">Verified</div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </FadeIn>
 
           </div>
 
         </div>
 
         {/* ================= UPCOMING SESSIONS CARD ================= */}
-        <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 p-8 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50 transition-all duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-extrabold text-slate-900">Upcoming Sessions</h3>
-            <Link to="/sessions" className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-              View All <ArrowUpRight className="w-4 h-4" />
-            </Link>
-          </div>
+        <FadeIn delay={0.5}>
+          <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 p-8 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50 transition-all duration-300">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-extrabold text-slate-900">Upcoming Sessions</h3>
+              <Link to="/sessions" className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                View All <ArrowUpRight className="w-4 h-4" />
+              </Link>
+            </div>
 
-          <div className="space-y-4">
-            {upcomingSessions.map((session) => (
-              <div key={session.id} className="flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-sm transition-all group">
-                <div className="flex items-center gap-4 mb-4 md:mb-0">
-                  <img src={session.avatar} alt={session.student} className="w-12 h-12 rounded-full" />
-                  <div>
-                    <h4 className="text-base font-bold text-slate-900">{session.student}</h4>
-                    <p className="text-sm font-medium text-slate-500">{session.topic}</p>
+            <div className="space-y-4">
+              {upcomingSessions.map((session) => (
+                <div key={session.id} className="flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-sm transition-all group">
+                  <div className="flex items-center gap-4 mb-4 md:mb-0">
+                    <img src={session.avatar} alt={session.student} className="w-12 h-12 rounded-full" />
+                    <div>
+                      <h4 className="text-base font-bold text-slate-900">{session.student}</h4>
+                      <p className="text-sm font-medium text-slate-500">{session.topic}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 md:gap-8">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+                      <Calendar className="w-4 h-4 text-slate-400" />
+                      {session.time}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+                      <Clock className="w-4 h-4 text-slate-400" />
+                      {session.duration}
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${session.status === 'Confirmed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                      }`}>
+                      {session.status}
+                    </span>
+                    <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all shadow-sm">
+                      Details
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-4 md:gap-8">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
-                    <Calendar className="w-4 h-4 text-slate-400" />
-                    {session.time}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
-                    <Clock className="w-4 h-4 text-slate-400" />
-                    {session.duration}
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${session.status === 'Confirmed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                    }`}>
-                    {session.status}
-                  </span>
-                  <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all shadow-sm">
-                    Details
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        </FadeIn>
       </div>
     </div>
   );

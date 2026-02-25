@@ -45,7 +45,7 @@ export default function MyStudents() {
   };
 
   return (
-    <>
+    <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
       <header className="px-8 pt-6 pb-4 bg-white/70 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-10">
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <Users className="w-6 h-6 text-indigo-600" />
@@ -132,6 +132,6 @@ export default function MyStudents() {
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 }

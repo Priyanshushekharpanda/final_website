@@ -15,6 +15,7 @@ import {
     Ban
 } from 'lucide-react';
 import { useMentor } from '../context/MentorContext';
+import FadeIn from '../components/FadeIn';
 
 // --- Time Helper Functions ---
 
@@ -259,7 +260,7 @@ export default function Availability() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/80 font-sans text-slate-900 pb-12">
+        <div className="min-h-screen bg-slate-50/80 font-sans text-slate-900 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
             {/* Reuse Calendar Styles from Sessions page */}
             <style>{`
         .custom-calendar.react-calendar { width: 100%; border: none; background: transparent; font-family: inherit; }
@@ -291,7 +292,7 @@ export default function Availability() {
                 <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-slate-200 hover:shadow-indigo-200 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="hidden md:flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-slate-200 hover:shadow-indigo-200 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {isSaving ? (
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -318,180 +319,202 @@ export default function Availability() {
 
                 <div className="grid lg:grid-cols-12 gap-8">
                     {/* Left: Weekly Schedule */}
-                    <div className="lg:col-span-7 bg-white rounded-[24px] border border-slate-200 shadow-sm p-8">
-                        <div className="flex items-center gap-3 mb-8 pb-6 border-b border-slate-100">
-                            <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                <Clock className="w-6 h-6" />
+                    <FadeIn delay={0.1} className="lg:col-span-7">
+                        <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-8">
+                            <div className="flex items-center gap-3 mb-8 pb-6 border-b border-slate-100">
+                                <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                    <Clock className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-900">Weekly Recurring Schedule</h2>
+                                    <p className="text-slate-500 text-sm font-medium">Set your standard availability for each day of the week.</p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="text-xl font-bold text-slate-900">Weekly Recurring Schedule</h2>
-                                <p className="text-slate-500 text-sm font-medium">Set your standard availability for each day of the week.</p>
-                            </div>
-                        </div>
 
-                        <div className="space-y-6">
-                            {daysOfWeek.map((day) => {
-                                const daySlots = weeklySlots.filter(s => s.day === day);
-                                const hasSlots = daySlots.length > 0;
+                            <div className="space-y-6">
+                                {daysOfWeek.map((day) => {
+                                    const daySlots = weeklySlots.filter(s => s.day === day);
+                                    const hasSlots = daySlots.length > 0;
 
-                                return (
-                                    <div key={day} className={`group flex flex-col md:flex-row md:items-start gap-6 p-5 rounded-2xl border transition-all ${hasSlots ? 'bg-white border-slate-200' : 'bg-slate-50/50 border-slate-100'}`}>
+                                    return (
+                                        <div key={day} className={`group flex flex-col md:flex-row md:items-start gap-6 p-5 rounded-2xl border transition-all ${hasSlots ? 'bg-white border-slate-200' : 'bg-slate-50/50 border-slate-100'}`}>
 
-                                        {/* Day Label */}
-                                        <div className="w-32 pt-2 flex flex-col gap-1">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-3 h-3 rounded-full ${hasSlots ? 'bg-green-500' : 'bg-slate-300'}`}></div>
-                                                <span className={`font-bold ${hasSlots ? 'text-slate-900' : 'text-slate-400'}`}>{day}</span>
+                                            {/* Day Label */}
+                                            <div className="w-32 pt-2 flex flex-col gap-1">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-3 h-3 rounded-full ${hasSlots ? 'bg-green-500' : 'bg-slate-300'}`}></div>
+                                                    <span className={`font-bold ${hasSlots ? 'text-slate-900' : 'text-slate-400'}`}>{day}</span>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        {/* Slots Area */}
-                                        <div className="flex-1 space-y-3">
-                                            {hasSlots ? (
-                                                daySlots.map((slot, idx) => {
-                                                    const realIndex = weeklySlots.indexOf(slot);
-                                                    return (
-                                                        <div key={idx} className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
-                                                            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-1.5 pl-3 shadow-sm hover:border-indigo-300 transition-colors focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/20">
-                                                                <TimePicker
-                                                                    value={slot.startTime}
-                                                                    onChange={(val) => updateWeeklySlot(realIndex, 'startTime', val)}
-                                                                />
-                                                                <span className="text-slate-300 font-light">|</span>
-                                                                <TimePicker
-                                                                    value={slot.endTime}
-                                                                    onChange={(val) => updateWeeklySlot(realIndex, 'endTime', val)}
-                                                                />
+                                            {/* Slots Area */}
+                                            <div className="flex-1 space-y-3">
+                                                {hasSlots ? (
+                                                    daySlots.map((slot, idx) => {
+                                                        const realIndex = weeklySlots.indexOf(slot);
+                                                        return (
+                                                            <div key={idx} className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
+                                                                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-1.5 pl-3 shadow-sm hover:border-indigo-300 transition-colors focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/20">
+                                                                    <TimePicker
+                                                                        value={slot.startTime}
+                                                                        onChange={(val) => updateWeeklySlot(realIndex, 'startTime', val)}
+                                                                    />
+                                                                    <span className="text-slate-300 font-light">|</span>
+                                                                    <TimePicker
+                                                                        value={slot.endTime}
+                                                                        onChange={(val) => updateWeeklySlot(realIndex, 'endTime', val)}
+                                                                    />
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => removeWeeklySlot(realIndex)}
+                                                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
                                                             </div>
-                                                            <button
-                                                                onClick={() => removeWeeklySlot(realIndex)}
-                                                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                    );
-                                                })
-                                            ) : (
-                                                <div className="pt-2 text-sm text-slate-400 italic">Unavailable</div>
-                                            )}
-                                        </div>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <div className="pt-2 text-sm text-slate-400 italic">Unavailable</div>
+                                                )}
+                                            </div>
 
-                                        {/* Add Button */}
-                                        <button
-                                            onClick={() => addWeeklySlot(day)}
-                                            className="self-start md:self-center p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                            title="Add time slot"
-                                        >
-                                            <Plus className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                );
-                            })}
+                                            {/* Add Button */}
+                                            <button
+                                                onClick={() => addWeeklySlot(day)}
+                                                className="self-start md:self-center p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                title="Add time slot"
+                                            >
+                                                <Plus className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
+                    </FadeIn>
 
                     {/* Right: Calendar & Specific Dates */}
                     <div className="lg:col-span-5 space-y-8">
                         {/* Calendar Card */}
-                        <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-8">
-                            <div className="mb-6">
-                                <h2 className="text-xl font-bold text-slate-900">Specific Dates</h2>
-                                <p className="text-slate-500 text-sm font-medium mt-1">Select a date to override your weekly schedule.</p>
-                            </div>
+                        <FadeIn delay={0.2}>
+                            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-8">
+                                <div className="mb-6">
+                                    <h2 className="text-xl font-bold text-slate-900">Specific Dates</h2>
+                                    <p className="text-slate-500 text-sm font-medium mt-1">Select a date to override your weekly schedule.</p>
+                                </div>
 
-                            <div className="bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
-                                <Calendar
-                                    onChange={setSelectedDate}
-                                    value={selectedDate}
-                                    className="custom-calendar"
-                                    tileClassName={({ date }) => {
-                                        const key = formatDateKey(date);
-                                        return dateSpecificSlots[key] ? 'has-slots' : '';
-                                    }}
-                                />
+                                <div className="bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+                                    <Calendar
+                                        onChange={setSelectedDate}
+                                        value={selectedDate}
+                                        className="custom-calendar"
+                                        tileClassName={({ date }) => {
+                                            const key = formatDateKey(date);
+                                            return dateSpecificSlots[key] ? 'has-slots' : '';
+                                        }}
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        </FadeIn>
 
                         {/* Selected Date Slots Card */}
-                        <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <div>
-                                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                        {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                        <span className="text-slate-400 font-normal">
-                                            {selectedDate.toLocaleDateString('en-US', { year: 'numeric' })}
-                                        </span>
-                                    </h2>
-                                    <p className="text-slate-500 text-xs font-medium mt-0.5">
-                                        {selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={addDateSlot}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition-colors shadow-sm"
-                                >
-                                    <Plus className="w-3.5 h-3.5" /> Add Override
-                                </button>
-                            </div>
-
-                            <div className="space-y-3">
-                                {dateSpecificSlots[formatDateKey(selectedDate)]?.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed border-red-100 rounded-2xl bg-red-50/30">
-                                        <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2 text-red-500">
-                                            <Ban className="w-5 h-5" />
-                                        </div>
-                                        <h3 className="text-sm font-bold text-slate-900">Unavailable</h3>
-                                        <button
-                                            onClick={() => {
-                                                const newSlots = { ...dateSpecificSlots };
-                                                delete newSlots[formatDateKey(selectedDate)];
-                                                setDateSpecificSlots(newSlots);
-                                            }}
-                                            className="mt-2 text-slate-600 font-bold text-xs hover:text-slate-900 underline"
-                                        >
-                                            Clear override
-                                        </button>
-                                    </div>
-                                ) : getSlotsForDate(selectedDate).length > 0 ? (
-                                    getSlotsForDate(selectedDate).map((slot, idx) => (
-                                        <div key={idx} className="group flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-indigo-300 hover:shadow-sm transition-all bg-white">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-2">
-                                                    <TimePicker
-                                                        value={slot.startTime}
-                                                        onChange={(val) => updateDateSlot(selectedDate, idx, 'startTime', val)}
-                                                        className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-sm text-slate-900 focus:border-indigo-500 min-w-[80px]"
-                                                    />
-                                                    <ChevronRight className="w-3 h-3 text-slate-300" />
-                                                    <TimePicker
-                                                        value={slot.endTime}
-                                                        onChange={(val) => updateDateSlot(selectedDate, idx, 'endTime', val)}
-                                                        className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-sm text-slate-900 focus:border-indigo-500 min-w-[80px]"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                onClick={() => removeDateSlot(selectedDate, idx)}
-                                                className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
-                                        <p className="text-slate-400 text-xs max-w-[200px]">
-                                            Using weekly schedule for <span className="font-bold">{selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}</span>.
+                        <FadeIn delay={0.3}>
+                            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-8">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                            {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                            <span className="text-slate-400 font-normal">
+                                                {selectedDate.toLocaleDateString('en-US', { year: 'numeric' })}
+                                            </span>
+                                        </h2>
+                                        <p className="text-slate-500 text-xs font-medium mt-0.5">
+                                            {selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}
                                         </p>
                                     </div>
-                                )}
+                                    <button
+                                        onClick={addDateSlot}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition-colors shadow-sm"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Add Override
+                                    </button>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {dateSpecificSlots[formatDateKey(selectedDate)]?.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed border-red-100 rounded-2xl bg-red-50/30">
+                                            <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2 text-red-500">
+                                                <Ban className="w-5 h-5" />
+                                            </div>
+                                            <h3 className="text-sm font-bold text-slate-900">Unavailable</h3>
+                                            <button
+                                                onClick={() => {
+                                                    const newSlots = { ...dateSpecificSlots };
+                                                    delete newSlots[formatDateKey(selectedDate)];
+                                                    setDateSpecificSlots(newSlots);
+                                                }}
+                                                className="mt-2 text-slate-600 font-bold text-xs hover:text-slate-900 underline"
+                                            >
+                                                Clear override
+                                            </button>
+                                        </div>
+                                    ) : getSlotsForDate(selectedDate).length > 0 ? (
+                                        getSlotsForDate(selectedDate).map((slot, idx) => (
+                                            <div key={idx} className="group flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-indigo-300 hover:shadow-sm transition-all bg-white">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <TimePicker
+                                                            value={slot.startTime}
+                                                            onChange={(val) => updateDateSlot(selectedDate, idx, 'startTime', val)}
+                                                            className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-sm text-slate-900 focus:border-indigo-500 min-w-[80px]"
+                                                        />
+                                                        <ChevronRight className="w-3 h-3 text-slate-300" />
+                                                        <TimePicker
+                                                            value={slot.endTime}
+                                                            onChange={(val) => updateDateSlot(selectedDate, idx, 'endTime', val)}
+                                                            className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-sm text-slate-900 focus:border-indigo-500 min-w-[80px]"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    onClick={() => removeDateSlot(selectedDate, idx)}
+                                                    className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
+                                            <p className="text-slate-400 text-xs max-w-[200px]">
+                                                Using weekly schedule for <span className="font-bold">{selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}</span>.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        </FadeIn>
                     </div>
                 </div>
             </main>
+
+            {/* Mobile Floating Action Bar */}
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200 md:hidden z-30 pb-safe">
+                <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-slate-200 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                    {isSaving ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                        <Save className="w-5 h-5" />
+                    )}
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+            </div>
         </div>
     );
 }

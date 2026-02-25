@@ -12,6 +12,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { useMentor } from '../context/MentorContext';
+import FadeIn from '../components/FadeIn';
 
 // Mock upcoming sessions data
 const upcomingSessionsData = [
@@ -102,7 +103,7 @@ export default function Sessions() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
       {/* Custom Styles for react-calendar */}
       <style>{`
         .custom-calendar.react-calendar {
@@ -221,7 +222,7 @@ export default function Sessions() {
           <div className="lg:col-span-8 space-y-8">
 
             {/* Spotlight: Selected Date Sessions */}
-            <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-8">
+            <FadeIn delay={0.1} className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-8">
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
@@ -295,10 +296,10 @@ export default function Sessions() {
                   </p>
                 </div>
               )}
-            </div>
+            </FadeIn>
 
             {/* Mentoring Activity Graph */}
-            <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-8">
+            <FadeIn delay={0.2} className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-xl font-bold text-slate-900">Mentoring Activity</h3>
@@ -356,11 +357,11 @@ export default function Sessions() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+            </FadeIn>
 
             {/* Redesigned Table View: Your Availability */}
             {availableSlots.length > 0 && (
-              <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 overflow-hidden">
+              <FadeIn delay={0.3} className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 overflow-hidden">
                 <div className="flex items-center justify-between p-6 border-b border-slate-100">
                   <h3 className="text-xl font-bold text-slate-900">Your Availability</h3>
                   <Link to="/availability" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
@@ -394,7 +395,7 @@ export default function Sessions() {
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </FadeIn>
             )}
 
           </div>
@@ -403,27 +404,29 @@ export default function Sessions() {
           <div className="lg:col-span-4 flex flex-col gap-8">
 
             {/* Highly Styled Calendar */}
-            <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50">
-              <Calendar
-                onChange={setSelectedDate}
-                value={selectedDate}
-                className="custom-calendar"
-                prevLabel={<span className="text-xl">‹</span>}
-                nextLabel={<span className="text-xl">›</span>}
-                prev2Label={null}
-                next2Label={null}
-                tileClassName={({ date }) => {
-                  let classes = '';
-                  if (sessionDates.includes(date.toDateString()) && date.toDateString() !== selectedDate.toDateString()) {
-                    classes += ' font-bold text-blue-700 after:content-[""] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:bg-blue-500 after:rounded-full';
-                  }
-                  return classes;
-                }}
-              />
-            </div>
+            <FadeIn delay={0.2}>
+              <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50">
+                <Calendar
+                  onChange={setSelectedDate}
+                  value={selectedDate}
+                  className="custom-calendar"
+                  prevLabel={<span className="text-xl">‹</span>}
+                  nextLabel={<span className="text-xl">›</span>}
+                  prev2Label={null}
+                  next2Label={null}
+                  tileClassName={({ date }) => {
+                    let classes = '';
+                    if (sessionDates.includes(date.toDateString()) && date.toDateString() !== selectedDate.toDateString()) {
+                      classes += ' font-bold text-blue-700 after:content-[""] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:bg-blue-500 after:rounded-full';
+                    }
+                    return classes;
+                  }}
+                />
+              </div>
+            </FadeIn>
 
             {/* Stats Card */}
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl shadow-lg shadow-slate-900/10 border border-slate-800 p-7 text-white relative overflow-hidden">
+            <FadeIn delay={0.3} className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl shadow-lg shadow-slate-900/10 border border-slate-800 p-7 text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10">
                 <CalendarIcon className="w-24 h-24" />
               </div>
@@ -432,14 +435,14 @@ export default function Sessions() {
                 <span className="text-4xl font-extrabold">{mentor?.sessionsCompleted || 0}</span>
                 <span className="text-slate-400 text-sm mb-1">completed sessions</span>
               </div>
-            </div>
+            </FadeIn>
 
           </div>
 
         </div>
 
         {/* Bottom Section: All Upcoming Sessions Table */}
-        <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 overflow-hidden">
+        <FadeIn delay={0.4} className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 overflow-hidden">
           <div className="flex items-center justify-between p-6 border-b border-slate-100">
             <h3 className="text-xl font-bold text-slate-900">All Upcoming Sessions</h3>
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-3 py-1 rounded-full">
@@ -517,7 +520,7 @@ export default function Sessions() {
               </button>
             </div>
           </div>
-        </div>
+        </FadeIn>
 
       </main>
     </div>
