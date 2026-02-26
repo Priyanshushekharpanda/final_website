@@ -18,9 +18,12 @@ import {
   Smartphone,
   Briefcase,
   QrCode,
-  Wallet
+  Wallet,
+  MapPin,
+  GraduationCap,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+// Assuming these contexts/components exist in your project structure
 import { useMentor } from '../context/MentorContext';
 import FadeIn from '../components/FadeIn';
 
@@ -32,6 +35,60 @@ const NotificationPopup = ({ message }) => (
   </div>
 );
 
+const SmoothWrapper = ({ children, className = "" }) => {
+  const contentRef = useRef(null);
+  const [height, setHeight] = useState('auto');
+
+  useEffect(() => {
+    if (!contentRef.current) return;
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setHeight(entry.contentRect.height);
+      }
+    });
+    resizeObserver.observe(contentRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  return (
+    <div
+      style={{ height }}
+      className={`transition-[height] duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] overflow-hidden will-change-[height] ${className}`}
+    >
+      <div ref={contentRef}>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const InputGroup = ({ label, value, onChange, error, success, type = "text", icon: Icon, placeholder }) => (
+  <div className="relative group">
+    <label className="block text-[11px] uppercase tracking-wider font-bold text-slate-500 mb-2 ml-1">{label}</label>
+    <div className="relative">
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`block w-full pl-11 pr-4 py-3.5 bg-white border ${error ? 'border-red-300 bg-red-50/30 text-red-900 focus:border-red-500 focus:ring-red-200' : success ? 'border-indigo-500 bg-indigo-50/10 focus:border-indigo-500 focus:ring-indigo-200' : 'border-slate-200 group-hover:border-slate-300 focus:border-indigo-500 focus:ring-indigo-100'} 
+        rounded-2xl text-[15px] font-semibold text-slate-800 placeholder:text-slate-400
+        focus:ring-4 focus:outline-none transition-all duration-200 shadow-sm`}
+      />
+      {Icon && <Icon className={`absolute left-4 top-4 w-5 h-5 transition-colors ${error ? 'text-red-400' : 'text-slate-400 group-hover:text-slate-500 group-focus-within:text-indigo-500'}`} />}
+    </div>
+    {error && <p className="absolute -bottom-5 right-0 text-red-500 text-[10px] font-bold animate-in slide-in-from-top-1">{error}</p>}
+  </div>
+);
+
+// Define avatar assets corresponding to the user's request
+const AVATAR_ASSETS = {
+  Male: "https://api.dicebear.com/9.x/toon-head/svg?seed=Vivian",
+  Female: "https://api.dicebear.com/9.x/toon-head/svg?seed=Oliver",
+  Transgender: "https://api.dicebear.com/9.x/avataaars/svg?seed=Jack",
+  Bisexual: "https://api.dicebear.com/9.x/avataaars/svg?seed=Aiden"
+};
+
 export default function EditProfile() {
   const { mentor, setMentor, profileImageUrl, setProfileImageUrl } = useMentor();
   const [activeSection, setActiveSection] = useState(null);
@@ -39,6 +96,7 @@ export default function EditProfile() {
   const [isQRVisible, setIsQRVisible] = useState(false);
   const [notification, setNotification] = useState(null);
   const timeoutRef = useRef(null);
+  const [avatarColor, setAvatarColor] = useState("b6e3f4");
 
   // Local state for the banner image
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
@@ -49,13 +107,11 @@ export default function EditProfile() {
   const [isPhoneDropdownOpen, setIsPhoneDropdownOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState({ code: '+966', label: 'SA' });
 
-  // Mock state for slots
+  // Slots State
   const [slots, setSlots] = useState(mentor?.availability || [
     { id: 1, day: 'Monday', startTime: '10:00 AM', endTime: '11:00 AM' },
     { id: 2, day: 'Wednesday', startTime: '02:00 PM', endTime: '03:00 PM' },
   ]);
-  const [newSlot, setNewSlot] = useState({ day: 'Monday', startTime: '', endTime: '' });
-  const [editingSlotId, setEditingSlotId] = useState(null);
 
   // Mock upcoming sessions
   const upcomingSessions = [
@@ -96,6 +152,8 @@ export default function EditProfile() {
     { code: '+971', label: 'AE' },
   ];
 
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
   useEffect(() => {
     if (mentor?.availability) {
       setSlots(mentor.availability);
@@ -125,6 +183,17 @@ export default function EditProfile() {
     if (!file || !file.type.startsWith('image/')) return;
     if (bannerImageUrl) URL.revokeObjectURL(bannerImageUrl);
     setBannerImageUrl(URL.createObjectURL(file));
+  };
+
+  const handleGenderSelect = (gender) => {
+    updateField('gender', gender);
+    setProfileImageUrl(`${AVATAR_ASSETS[gender]}&backgroundColor=${avatarColor}`);
+  };
+
+  const handleColorSelect = (color) => {
+    setAvatarColor(color);
+    const gender = mentor?.gender && AVATAR_ASSETS[mentor.gender] ? mentor.gender : 'Male';
+    setProfileImageUrl(`${AVATAR_ASSETS[gender]}&backgroundColor=${color}`);
   };
 
   const validateField = (field, value) => {
@@ -164,82 +233,9 @@ export default function EditProfile() {
     }
   };
 
-  const formatTime = (time) => {
-    if (!time) return '';
-    const [hours, minutes] = time.split(':');
-    const h = parseInt(hours, 10);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const h12 = h % 12 || 12;
-    return `${h12}:${minutes} ${ampm}`;
-  };
-
-  const convertTo24Hour = (timeStr) => {
-    if (!timeStr) return '';
-    const [time, modifier] = timeStr.split(' ');
-    let [hours, minutes] = time.split(':');
-    hours = parseInt(hours, 10);
-    if (hours === 12) hours = 0;
-    if (modifier === 'PM') hours += 12;
-    return `${hours.toString().padStart(2, '0')}:${minutes}`;
-  };
-
   const showNotification = (id, message) => {
     setNotification({ id, message });
     setTimeout(() => setNotification(null), 3000);
-  };
-
-  const addSlot = () => {
-    if (newSlot.startTime && newSlot.endTime) {
-      const formattedStart = formatTime(newSlot.startTime);
-      const formattedEnd = formatTime(newSlot.endTime);
-
-      if (editingSlotId) {
-        const updatedSlots = slots.map((s) =>
-          s.id === editingSlotId
-            ? { ...s, day: newSlot.day, startTime: formattedStart, endTime: formattedEnd }
-            : s
-        );
-        setSlots(updatedSlots);
-        setMentor((prev) => ({ ...prev, availability: updatedSlots }));
-        setEditingSlotId(null);
-        setNewSlot({ day: 'Monday', startTime: '', endTime: '' });
-      } else {
-        const slotToAdd = {
-          id: Date.now(),
-          day: newSlot.day,
-          startTime: formattedStart,
-          endTime: formattedEnd
-        };
-        const updatedSlots = [...slots, slotToAdd];
-        setSlots(updatedSlots);
-        setMentor((prev) => ({ ...prev, availability: updatedSlots }));
-        setNewSlot({ ...newSlot, startTime: '', endTime: '' });
-      }
-    }
-  };
-
-  const removeSlot = (id) => {
-    if (editingSlotId === id) {
-      setEditingSlotId(null);
-      setNewSlot({ day: 'Monday', startTime: '', endTime: '' });
-    }
-    const updatedSlots = slots.filter((s) => s.id !== id);
-    setSlots(updatedSlots);
-    setMentor((prev) => ({ ...prev, availability: updatedSlots }));
-  };
-
-  const handleEditSlot = (slot) => {
-    setEditingSlotId(slot.id);
-    setNewSlot({
-      day: slot.day,
-      startTime: convertTo24Hour(slot.startTime),
-      endTime: convertTo24Hour(slot.endTime)
-    });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingSlotId(null);
-    setNewSlot({ day: 'Monday', startTime: '', endTime: '' });
   };
 
   const toggleSection = (section) => {
@@ -280,38 +276,19 @@ export default function EditProfile() {
 
   const getCardStyle = (sectionName) => {
     const isAnySectionActive = activeSection !== null;
-    const isThisSectionActive = activeSection === sectionName;
+    const isThisSectionActive = activeSection === sectionName || (sectionName === 'personal' && activeSection === 'bio');
     const isBlurState = isAnySectionActive && !isThisSectionActive;
 
-    const baseClasses = "bg-white rounded-[2rem] border border-slate-200/60 p-5 sm:p-6 md:p-8 transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] relative overflow-hidden";
+    const baseClasses = "rounded-[2rem] border border-slate-200/60 p-5 sm:p-6 md:p-8 transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] relative overflow-hidden";
 
     if (isThisSectionActive) {
-      return `${baseClasses} shadow-2xl shadow-indigo-900/10 ring-1 ring-indigo-500/30 scale-[1.005] z-30 translate-y-0`;
+      return `bg-indigo-50/30 ${baseClasses} shadow-2xl shadow-indigo-900/10 ring-1 ring-indigo-500/30 scale-[1.005] z-30 translate-y-0`;
     } else if (isBlurState) {
-      return `${baseClasses} shadow-none opacity-50 blur-[1px] grayscale-[0.1] scale-[0.99] pointer-events-none translate-y-0`;
+      return `bg-white ${baseClasses} shadow-none opacity-50 blur-[1px] grayscale-[0.1] scale-[0.99] pointer-events-none translate-y-0`;
     } else {
-      return `${baseClasses} shadow-sm hover:shadow-xl hover:shadow-slate-200/60 hover:-translate-y-1 hover:border-indigo-200/50 z-10`;
+      return `bg-white ${baseClasses} shadow-sm hover:shadow-xl hover:shadow-slate-200/60 hover:-translate-y-1 hover:border-indigo-200/50 z-10`;
     }
   };
-
-  const InputGroup = ({ label, value, onChange, error, success, type = "text", icon: Icon, placeholder }) => (
-    <div className="relative group">
-      <label className="block text-[11px] uppercase tracking-wider font-bold text-slate-500 mb-2 ml-1">{label}</label>
-      <div className="relative">
-        <input
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className={`block w-full pl-11 pr-4 py-3.5 bg-white border ${error ? 'border-red-300 bg-red-50/30 text-red-900 focus:border-red-500 focus:ring-red-200' : success ? 'border-indigo-500 bg-indigo-50/10 focus:border-indigo-500 focus:ring-indigo-200' : 'border-slate-200 group-hover:border-slate-300 focus:border-indigo-500 focus:ring-indigo-100'} 
-          rounded-2xl text-[15px] font-semibold text-slate-800 placeholder:text-slate-400
-          focus:ring-4 focus:outline-none transition-all duration-200 shadow-sm`}
-        />
-        {Icon && <Icon className={`absolute left-4 top-4 w-5 h-5 transition-colors ${error ? 'text-red-400' : 'text-slate-400 group-hover:text-slate-500 group-focus-within:text-indigo-500'}`} />}
-      </div>
-      {error && <p className="absolute -bottom-5 right-0 text-red-500 text-[10px] font-bold animate-in slide-in-from-top-1">{error}</p>}
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 pb-24 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900">
@@ -334,7 +311,7 @@ export default function EditProfile() {
       </div>
 
       {/* ================= TOP HEADER ================= */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between z-10 animate-pop-in gap-4">
+      <div className="relative max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between z-10 animate-pop-in gap-4">
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex flex-col">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-none">Your Profile</h1>
@@ -354,14 +331,14 @@ export default function EditProfile() {
         </div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-10 z-10 animate-pop-in" style={{ animationDelay: '0.1s' }}>
+      <div className="relative max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-10 z-10 animate-pop-in" style={{ animationDelay: '0.1s' }}>
 
         {/* ================= HERO PROFILE CARD ================= */}
         <FadeIn delay={0.1}>
           <div className={getCardStyle('personal')}>
 
             {/* Banner Area */}
-            <div className="h-40 sm:h-52 w-full relative group rounded-3xl overflow-hidden mb-6 shadow-inner bg-slate-100">
+            <div className="h-35 sm:h-40 w-[calc(100%+2.5rem)] sm:w-[calc(100%+3rem)] md:w-[calc(100%+4rem)] -mx-5 -mt-5 sm:-mx-6 sm:-mt-6 md:-mx-8 md:-mt-8 relative group overflow-hidden mb-0 shadow-sm bg-slate-100">
               {bannerImageUrl ? (
                 <img src={bannerImageUrl} alt="Banner" className="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 group-hover:scale-105" />
               ) : (
@@ -374,30 +351,25 @@ export default function EditProfile() {
                   }}
                 />
               )}
-
               <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-              <label className="absolute top-6 right-6 p-3 bg-white/80 backdrop-blur-md border border-white/50 rounded-2xl hover:bg-white transition-all cursor-pointer text-slate-700 hover:text-indigo-600 shadow-lg translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 active:scale-95">
-                <Camera className="w-5 h-5" />
-                <input type="file" accept="image/*" className="hidden" onChange={handleBannerImageChange} />
-              </label>
             </div>
 
             {/* Profile Content */}
             <div className="relative">
-              <div className="flex flex-col lg:flex-row items-center sm:items-start lg:items-end gap-6 sm:gap-8 mb-8 sm:mb-10 relative">
+              <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 sm:gap-6 mb-4 sm:mb-5 relative text-center lg:text-left">
 
                 {/* Avatar Section (Left) */}
-                <div className="relative -mt-24 sm:-mt-28 z-30 shrink-0 group/avatar ml-0 sm:ml-4 lg:ml-0">
-                  <div className="w-32 h-32 sm:w-44 sm:h-44 rounded-[2rem] p-2 bg-white shadow-2xl shadow-slate-200/80 rotate-[-2deg] hover:rotate-0 hover:shadow-2xl hover:shadow-indigo-500/50 transition-all duration-500 ease-out">
-                    <label className="block w-full h-full rounded-[2rem] overflow-hidden relative cursor-pointer bg-slate-100 ring-1 ring-slate-100">
+                <div className="relative -mt-12 sm:-mt-16 z-30 shrink-0 group/avatar">
+                  <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full p-1.5 bg-white shadow-xl shadow-slate-200/60 hover:scale-105 transition-all duration-300 ease-out">
+                    <label className="block w-full h-full rounded-full overflow-hidden relative cursor-pointer bg-slate-50 ring-1 ring-slate-100">
                       <img
-                        src={profileImageUrl || "https://ui-avatars.com/api/?name=User&background=eef2ff&color=4f46e5"}
+                        key={profileImageUrl} // Trigger animation on change
+                        src={profileImageUrl || AVATAR_ASSETS.Male}
                         alt="Profile"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover animate-in fade-in zoom-in duration-500"
                       />
                       <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all duration-300">
-                        <Camera className="w-8 h-8 text-white drop-shadow-md" />
+                        <Camera className="w-6 h-6 text-white drop-shadow-md" />
                       </div>
                       <input type="file" accept="image/*" className="hidden" onChange={handleProfileImageChange} />
                     </label>
@@ -410,7 +382,7 @@ export default function EditProfile() {
                       onMouseLeave={handleMouseLeave}
                       className="relative"
                     >
-                      <button onClick={handleCopyLink} className="p-3.5 bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 transition-all active:scale-95 hover:-translate-y-1">
+                      <button onClick={handleCopyLink} className="p-3.5 bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-full shadow-lg shadow-slate-200/50 border border-slate-100 transition-all active:scale-95 hover:-translate-y-1">
                         {copied ? <Check className="w-5 h-5 text-emerald-500" /> : <Share2 className="w-5 h-5" />}
                       </button>
                     </div>
@@ -422,7 +394,6 @@ export default function EditProfile() {
                     onMouseLeave={handleMouseLeave}
                     className={`absolute left-1/2 -translate-x-1/2 top-full mt-4 lg:mt-0 lg:top-auto lg:left-[115%] lg:bottom-0 lg:translate-x-0 z-20 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] origin-top lg:origin-left ${isQRVisible ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-90 invisible lg:-translate-x-8'}`}
                   >
-                    {/* Invisible bridge to prevent closing when moving mouse from button to popup */}
                     <div className="hidden lg:block absolute w-16 h-full -left-12 top-0" />
                     <div className="bg-white p-5 rounded-[2rem] shadow-2xl shadow-indigo-900/10 border border-slate-100 w-[180px] flex flex-col items-center">
                       <QRCodeSVG value={profileUrl} size={120} />
@@ -433,61 +404,113 @@ export default function EditProfile() {
                 </div>
 
                 {/* Details Section */}
-                <div className={`flex-1 w-full lg:pt-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isQRVisible ? 'lg:pl-56' : ''} text-center sm:text-left`}>
+                <div className={`flex-1 w-full lg:pt-2 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isQRVisible ? 'lg:pl-56' : ''}`}>
                   <div className="flex justify-between items-start w-full">
                     <div className="flex-1 transition-all duration-300">
-                      {activeSection === 'personal' ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl animate-in fade-in slide-in-from-bottom-2">
-                          <InputGroup label="Full Name" value={mentor?.name || ''} onChange={(e) => updateField('name', e.target.value)} error={errors.name} success={successAnimations.name} icon={User} placeholder="John Doe" />
-                          <InputGroup label="Role Title" value={mentor?.title || ''} onChange={(e) => updateField('title', e.target.value)} icon={Briefcase} placeholder="Senior Developer" />
-                          <InputGroup label="Email Address" value={mentor?.email || ''} onChange={(e) => updateField('email', e.target.value)} error={errors.email} success={successAnimations.email} icon={Mail} placeholder="john@example.com" />
+                      <SmoothWrapper>
+                        {activeSection === 'personal' ? (
+                          <div key="edit-form" className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]">
+                            <InputGroup label="Full Name" value={mentor?.name || ''} onChange={(e) => updateField('name', e.target.value)} error={errors.name} success={successAnimations.name} icon={User} placeholder="John Doe" />
+                            <InputGroup label="Role Title" value={mentor?.title || ''} onChange={(e) => updateField('title', e.target.value)} icon={Briefcase} placeholder="Senior Developer" />
+                            <InputGroup label="Email Address" value={mentor?.email || ''} onChange={(e) => updateField('email', e.target.value)} error={errors.email} success={successAnimations.email} icon={Mail} placeholder="john@example.com" />
 
-                          <div className="relative group">
-                            <label className="block text-[11px] uppercase tracking-wider font-bold text-slate-500 mb-2 ml-1">Phone</label>
-                            <div className="flex bg-white border border-slate-200 rounded-2xl focus-within:ring-4 focus-within:ring-indigo-100 focus-within:border-indigo-500 transition-all shadow-sm">
-                              <button
-                                onClick={() => setIsPhoneDropdownOpen(!isPhoneDropdownOpen)}
-                                className="px-4 border-r border-slate-200 flex items-center gap-2 hover:bg-slate-50 rounded-l-2xl transition-colors text-sm font-bold text-slate-700"
-                              >
-                                {selectedCountry.code} <ChevronDown className="w-3 h-3 text-slate-400" />
-                              </button>
-                              <input
-                                type="tel"
-                                value={mentor?.phone || ''}
-                                onChange={(e) => updateField('phone', e.target.value)}
-                                className="w-full bg-transparent px-4 py-3.5 text-[15px] font-semibold outline-none placeholder:text-slate-400 rounded-r-2xl"
-                                placeholder="123 456 789"
-                              />
-                              <Smartphone className="absolute right-4 top-4 w-5 h-5 text-slate-400 pointer-events-none" />
+                            <div className="relative group">
+                              <label className="block text-[11px] uppercase tracking-wider font-bold text-slate-500 mb-2 ml-1">Phone</label>
+                              <div className="flex bg-white border border-slate-200 rounded-2xl focus-within:ring-4 focus-within:ring-indigo-100 focus-within:border-indigo-500 transition-all shadow-sm">
+                                <button
+                                  onClick={() => setIsPhoneDropdownOpen(!isPhoneDropdownOpen)}
+                                  className="px-4 border-r border-slate-200 flex items-center gap-2 hover:bg-slate-50 rounded-l-2xl transition-colors text-sm font-bold text-slate-700"
+                                >
+                                  {selectedCountry.code} <ChevronDown className="w-3 h-3 text-slate-400" />
+                                </button>
+                                <input
+                                  type="tel"
+                                  value={mentor?.phone || ''}
+                                  onChange={(e) => updateField('phone', e.target.value)}
+                                  className="w-full bg-transparent px-4 py-3.5 text-[15px] font-semibold outline-none placeholder:text-slate-400 rounded-r-2xl"
+                                  placeholder="123 456 789"
+                                />
+                                <Smartphone className="absolute right-4 top-4 w-5 h-5 text-slate-400 pointer-events-none" />
+                              </div>
+                              {isPhoneDropdownOpen && (
+                                <div className="absolute top-full left-0 mt-2 w-36 bg-white border border-slate-100 shadow-xl rounded-2xl overflow-hidden z-50 py-1 animate-in fade-in zoom-in-95">
+                                  {countries.map(c => (
+                                    <button key={c.code} onClick={() => { setSelectedCountry(c); setIsPhoneDropdownOpen(false); }} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm font-semibold text-slate-700">
+                                      {c.label} ({c.code})
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                            {isPhoneDropdownOpen && (
-                              <div className="absolute top-full left-0 mt-2 w-36 bg-white border border-slate-100 shadow-xl rounded-2xl overflow-hidden z-50 py-1 animate-in fade-in zoom-in-95">
-                                {countries.map(c => (
-                                  <button key={c.code} onClick={() => { setSelectedCountry(c); setIsPhoneDropdownOpen(false); }} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm font-semibold text-slate-700">
-                                    {c.label} ({c.code})
+
+                            <InputGroup label="Location" value={mentor?.location || ''} onChange={(e) => updateField('location', e.target.value)} icon={MapPin} placeholder="San Francisco, CA" />
+                            <InputGroup label="Experience" value={mentor?.experience || ''} onChange={(e) => updateField('experience', e.target.value)} icon={GraduationCap} placeholder="3rd Year" />
+
+                            {/* Gender / Avatar Selection */}
+                            <div className="col-span-1 md:col-span-2 pt-2">
+                              <label className="block text-[11px] uppercase tracking-wider font-bold text-slate-500 mb-3 ml-1">Select Avatar / Gender</label>
+                              <div className="flex flex-wrap gap-3 mb-4">
+                                {Object.keys(AVATAR_ASSETS).map((gender) => (
+                                  <button
+                                    key={gender}
+                                    onClick={() => handleGenderSelect(gender)}
+                                    className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 border ${mentor?.gender === gender
+                                      ? 'bg-slate-900 text-white border-slate-900 shadow-lg scale-105 ring-2 ring-slate-200 ring-offset-2'
+                                      : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600 hover:shadow-sm'
+                                      }`}
+                                  >
+                                    {gender}
                                   </button>
                                 ))}
                               </div>
-                            )}
+
+                              {/* Color Picker */}
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs font-bold text-slate-400">Background:</span>
+                                <div className="flex items-center gap-2">
+                                  {['b6e3f4', 'c0aede', 'd1d4f9', 'ffdfbf', 'ffd5dc'].map((color) => (
+                                    <button
+                                      key={color}
+                                      type="button"
+                                      onClick={() => handleColorSelect(color)}
+                                      className={`w-6 h-6 rounded-full border-2 transition-all ${avatarColor === color ? 'border-slate-900 scale-110' : 'border-transparent hover:scale-110'}`}
+                                      style={{ backgroundColor: `#${color}` }}
+                                      title={`#${color}`}
+                                    />
+                                  ))}
+                                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-slate-200 cursor-pointer hover:border-indigo-300 transition-colors shadow-sm">
+                                    <input
+                                      type="color"
+                                      value={`#${avatarColor}`}
+                                      onChange={(e) => handleColorSelect(e.target.value.replace('#', ''))}
+                                      className="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 p-0 border-0 cursor-pointer"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">{mentor?.name || 'Your Name'}</h2>
-                          <p className="text-lg sm:text-xl font-medium text-slate-500 flex items-center justify-center sm:justify-start gap-2">
-                            {mentor?.title || 'Add your role'}
-                          </p>
-                          <div className="flex flex-wrap justify-center sm:justify-start gap-x-8 gap-y-3 pt-3 text-[15px] font-semibold text-slate-400">
-                            <span className="flex items-center gap-2.5 hover:text-indigo-600 transition-colors cursor-default break-all"><Mail className="w-4 h-4 shrink-0" /> {mentor?.email || 'No email'}</span>
-                            <span className="flex items-center gap-2.5 hover:text-indigo-600 transition-colors cursor-default"><Smartphone className="w-4 h-4 shrink-0" /> {selectedCountry.code} {mentor?.phone || 'No phone'}</span>
+                        ) : (
+                          <div key="view-info" className="space-y-1 sm:space-y-2 animate-in fade-in duration-500">
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">{mentor?.name || 'Your Name'}</h2>
+                            <p className="text-base sm:text-lg font-medium text-slate-500 flex items-center justify-center lg:justify-start gap-2 pb-1">
+                              {mentor?.title || 'Add your role'}
+                            </p>
+                            <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 pt-1 text-sm font-medium text-slate-500">
+                              <span className="flex items-center gap-2 hover:text-indigo-600 transition-colors cursor-default break-all"><Mail className="w-4 h-4 shrink-0 text-slate-400" /> {mentor?.email || 'No email'}</span>
+                              <span className="flex items-center gap-2 hover:text-indigo-600 transition-colors cursor-default"><Smartphone className="w-4 h-4 shrink-0 text-slate-400" /> {selectedCountry.code} {mentor?.phone || 'No phone'}</span>
+                              <span className="flex items-center gap-2 hover:text-indigo-600 transition-colors cursor-default"><MapPin className="w-4 h-4 shrink-0 text-slate-400" /> {mentor?.location || 'Add Location'}</span>
+                              <span className="flex items-center gap-2 hover:text-indigo-600 transition-colors cursor-default"><GraduationCap className="w-4 h-4 shrink-0 text-slate-400" /> {mentor?.experience || 'Add Experience'}</span>
+                              <span className="flex items-center gap-2 hover:text-indigo-600 transition-colors cursor-default"><User className="w-4 h-4 shrink-0 text-slate-400" /> {mentor?.gender || 'Add Gender'}</span>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </SmoothWrapper>
                     </div>
 
                     <button
                       onClick={() => toggleSection('personal')}
-                      className={`absolute top-0 right-0 sm:static ml-0 sm:ml-6 p-2.5 sm:p-3.5 rounded-2xl transition-all duration-300 shadow-sm border ${activeSection === 'personal' ? 'bg-slate-900 text-white border-slate-900 rotate-0 shadow-lg' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600 hover:shadow-md'}`}
+                      className={`absolute top-0 right-0 sm:static ml-0 sm:ml-6 p-2.5 sm:p-3.5 rounded-full transition-all duration-300 shadow-sm border ${activeSection === 'personal' ? 'bg-slate-900 text-white border-slate-900 rotate-0 shadow-lg' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600 hover:shadow-md'}`}
                     >
                       {activeSection === 'personal' ? <Check className="w-5 h-5" /> : <Pen className="w-5 h-5" />}
                     </button>
@@ -496,41 +519,41 @@ export default function EditProfile() {
               </div>
 
               {/* Bio Section */}
-              <div className="pt-8 border-t border-slate-100">
+              <div className="pt-4 border-t border-slate-100">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                     About Me
                   </h3>
-                  {activeSection !== 'personal' && (
-                    <button onClick={() => toggleSection('bio')} className="text-xs font-bold text-indigo-600 hover:text-indigo-700 px-4 py-1.5 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors">
-                      {activeSection === 'bio' ? 'Done' : 'Edit Bio'}
-                    </button>
-                  )}
+                  <button onClick={() => toggleSection('bio')} className="text-xs font-bold text-indigo-600 hover:text-indigo-700 px-4 py-1.5 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors">
+                    {activeSection === 'bio' ? 'Done' : 'Edit Bio'}
+                  </button>
                 </div>
-                {activeSection === 'bio' ? (
-                  <textarea
-                    value={mentor?.about || ''}
-                    onChange={(e) => updateField('about', e.target.value)}
-                    rows={5}
-                    className="w-full p-5 bg-white border border-slate-200 rounded-2xl text-slate-800 text-[15px] leading-relaxed focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none resize-none transition-all shadow-sm"
-                    placeholder="Tell your students a bit about yourself..."
-                  />
-                ) : (
-                  <p className="text-slate-600 leading-relaxed max-w-4xl text-[16px]">
-                    {mentor?.about || <span className="text-slate-400 italic">No bio added yet. Click edit to introduce yourself.</span>}
-                  </p>
-                )}
+                <SmoothWrapper>
+                  {activeSection === 'bio' ? (
+                    <textarea
+                      value={mentor?.about || ''}
+                      onChange={(e) => updateField('about', e.target.value)}
+                      rows={5}
+                      className="w-full p-5 bg-white border border-slate-200 rounded-2xl text-slate-800 text-[15px] leading-relaxed focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none resize-none transition-all shadow-sm"
+                      placeholder="Tell your students a bit about yourself..."
+                    />
+                  ) : (
+                    <p className="text-slate-600 leading-relaxed max-w-4xl text-[16px]">
+                      {mentor?.about || <span className="text-slate-400 italic">No bio added yet. Click edit to introduce yourself.</span>}
+                    </p>
+                  )}
+                </SmoothWrapper>
               </div>
             </div>
           </div>
         </FadeIn>
 
         {/* ================= 2-COLUMN GRID ================= */}
-        <div className="grid lg:grid-cols-2 gap-6 sm:gap-10 items-start">
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-10">
 
           {/* Availability Slots */}
-          <FadeIn delay={0.2}>
-            <div className={getCardStyle('slots')}>
+          <FadeIn delay={0.2} className="h-full">
+            <div className={`${getCardStyle('slots')} h-full`}>
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
@@ -538,33 +561,38 @@ export default function EditProfile() {
                   </div>
                   <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">Availability</h3>
                 </div>
-                <Link to="/availability" className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900">
+                <Link
+                  to="/availability"
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                >
                   Manage Slots
                 </Link>
               </div>
 
-              <div className="space-y-4 mb-8">
-                {slots.map((slot) => (
-                  <div key={slot.id} className="group relative flex items-center justify-between p-5 rounded-2xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:border-indigo-100 hover:shadow-md hover:shadow-indigo-900/5 transition-all duration-300">
-                    <div className="flex items-center gap-4">
-                      <div className="w-1.5 h-12 rounded-full bg-indigo-200 group-hover:bg-indigo-500 transition-colors"></div>
-                      <div>
-                        <p className="font-bold text-slate-900 text-[15px]">{slot.day}</p>
-                        <p className="text-xs font-bold text-slate-500 flex items-center gap-1.5 mt-1 bg-white px-2 py-1 rounded-lg border border-slate-100 w-fit">
-                          <Clock className="w-3 h-3" /> {slot.startTime} - {slot.endTime}
-                        </p>
+              <SmoothWrapper>
+                <div className="space-y-4 mb-8">
+                  {slots.map((slot) => (
+                    <div key={slot.id} className="group relative flex items-center justify-between p-5 rounded-2xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:border-indigo-100 hover:shadow-md hover:shadow-indigo-900/5 transition-all duration-300">
+                      <div className="flex items-center gap-4">
+                        <div className="w-1.5 h-12 rounded-full bg-indigo-200 group-hover:bg-indigo-500 transition-colors"></div>
+                        <div>
+                          <p className="font-bold text-slate-900 text-[15px]">{slot.day}</p>
+                          <p className="text-xs font-bold text-slate-500 flex items-center gap-1.5 mt-1 bg-white px-2 py-1 rounded-lg border border-slate-100 w-fit">
+                            <Clock className="w-3 h-3" /> {slot.startTime} - {slot.endTime}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-                {slots.length === 0 && <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-3xl text-slate-400 text-sm font-medium italic">No availability slots added yet.</div>}
-              </div>
+                  ))}
+                  {slots.length === 0 && <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-3xl text-slate-400 text-sm font-medium italic">No availability slots added yet.</div>}
+                </div>
+              </SmoothWrapper>
             </div>
           </FadeIn>
 
           {/* Payment (UPI) Section */}
-          <FadeIn delay={0.3}>
-            <div className={getCardStyle('payment')}>
+          <FadeIn delay={0.3} className="h-full">
+            <div className={`${getCardStyle('payment')} h-full`}>
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
@@ -577,80 +605,82 @@ export default function EditProfile() {
                 </button>
               </div>
 
-              {activeSection === 'payment' ? (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                  <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 mb-2">
-                    <p className="text-emerald-800 text-sm font-medium flex items-center gap-2">
-                      <QrCode className="w-4 h-4" />
-                      Enter your UPI ID below. A QR code will be generated automatically.
-                    </p>
-                  </div>
-
-                  <InputGroup label="UPI ID (VPA)" value={mentor?.upiId || ''} onChange={(e) => updateField('upiId', e.target.value)} error={errors.upiId} success={successAnimations.upiId} icon={Smartphone} placeholder="username@oksbi" />
-
-                  <div className="relative py-4">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-slate-200"></div>
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-2 text-slate-500 font-bold tracking-wider">Bank Details (Optional)</span>
-                    </div>
-                  </div>
-
-                  <InputGroup label="Account Number" value={mentor?.accountNumber || ''} onChange={(e) => updateField('accountNumber', e.target.value)} error={errors.accountNumber} success={successAnimations.accountNumber} placeholder="0000 0000 0000" />
-                  <div className="grid grid-cols-2 gap-5">
-                    <InputGroup label="Bank Name" value={mentor?.bankName || ''} onChange={(e) => updateField('bankName', e.target.value)} error={errors.bankName} placeholder="Bank Name" />
-                    <InputGroup label="IFSC Code" value={mentor?.ifsc || ''} onChange={(e) => updateField('ifsc', e.target.value)} error={errors.ifsc} placeholder="ABCD000" />
-                  </div>
-                </div>
-              ) : (
-                <div className="relative h-64 w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-emerald-900/20 group transition-all hover:scale-[1.02] duration-500 bg-gradient-to-br from-emerald-600 to-teal-900 text-white p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                  {/* Background Accents */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-                  <div className="absolute bottom-0 left-0 w-40 h-40 bg-teal-400/20 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none"></div>
-
-                  {/* Left: UPI Info */}
-                  <div className="flex flex-col justify-between h-full z-10 w-full text-center md:text-left">
-                    <div className="flex flex-col items-center md:items-start">
-                      <div className="px-3 py-1.5 bg-white/10 backdrop-blur-md w-fit rounded-lg border border-white/20 mb-4 shadow-sm">
-                        <span className="text-xs font-bold tracking-widest uppercase text-emerald-100 flex items-center gap-2">
-                          Unified Payments Interface
-                        </span>
-                      </div>
-                      <p className="text-emerald-100/60 text-[10px] font-bold tracking-wider uppercase mb-1">Payment Address</p>
-                      <p className="text-2xl md:text-3xl font-mono font-bold tracking-wide text-white drop-shadow-sm truncate w-full max-w-[200px] md:max-w-none">
-                        {mentor?.upiId || 'Add UPI ID'}
+              <SmoothWrapper>
+                {activeSection === 'payment' ? (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 mb-2">
+                      <p className="text-emerald-800 text-sm font-medium flex items-center gap-2">
+                        <QrCode className="w-4 h-4" />
+                        Enter your UPI ID below. A QR code will be generated automatically.
                       </p>
                     </div>
 
-                    <div className="hidden md:flex items-center gap-2 text-xs font-bold text-emerald-100 bg-emerald-900/30 px-3 py-1.5 rounded-full w-fit backdrop-blur-sm border border-emerald-500/30 mt-4">
-                      <Shield className="w-3.5 h-3.5" />
-                      {mentor?.bankName ? `Linked: ${mentor.bankName}` : 'Secure Payment Gateway'}
-                    </div>
-                  </div>
+                    <InputGroup label="UPI ID (VPA)" value={mentor?.upiId || ''} onChange={(e) => updateField('upiId', e.target.value)} error={errors.upiId} success={successAnimations.upiId} icon={Smartphone} placeholder="username@oksbi" />
 
-                  {/* Right: QR Code */}
-                  <div className="relative shrink-0">
-                    <div className="bg-white p-3.5 rounded-2xl shadow-xl shadow-emerald-900/40 transform rotate-[-3deg] group-hover:rotate-0 transition-all duration-500 ease-out border-4 border-white/20">
-                      {mentor?.upiId ? (
-                        <QRCodeSVG
-                          value={`upi://pay?pa=${mentor.upiId}&pn=${mentor.name || 'Mentor'}&cu=INR`}
-                          size={130}
-                          className="rounded-lg"
-                        />
-                      ) : (
-                        <div className="w-[130px] h-[130px] bg-slate-100 rounded-lg flex items-center justify-center text-slate-300">
-                          <QrCode className="w-12 h-12" />
-                        </div>
-                      )}
+                    <div className="relative py-4">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-slate-200"></div>
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-white px-2 text-slate-500 font-bold tracking-wider">Bank Details (Optional)</span>
+                      </div>
                     </div>
-                    {/* Scan Me Label */}
-                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 whitespace-nowrap z-20">
-                      Your QR
+
+                    <InputGroup label="Account Number" value={mentor?.accountNumber || ''} onChange={(e) => updateField('accountNumber', e.target.value)} error={errors.accountNumber} success={successAnimations.accountNumber} placeholder="0000 0000 0000" />
+                    <div className="grid grid-cols-2 gap-5">
+                      <InputGroup label="Bank Name" value={mentor?.bankName || ''} onChange={(e) => updateField('bankName', e.target.value)} error={errors.bankName} placeholder="Bank Name" />
+                      <InputGroup label="IFSC Code" value={mentor?.ifsc || ''} onChange={(e) => updateField('ifsc', e.target.value)} error={errors.ifsc} placeholder="ABCD000" />
                     </div>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="relative h-64 w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-emerald-900/20 group transition-all hover:scale-[1.02] duration-500 bg-gradient-to-br from-emerald-600 to-teal-900 text-white p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                    {/* Background Accents */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-teal-400/20 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none"></div>
+
+                    {/* Left: UPI Info */}
+                    <div className="flex flex-col justify-between h-full z-10 w-full text-center md:text-left">
+                      <div className="flex flex-col items-center md:items-start">
+                        <div className="px-3 py-1.5 bg-white/10 backdrop-blur-md w-fit rounded-lg border border-white/20 mb-4 shadow-sm">
+                          <span className="text-xs font-bold tracking-widest uppercase text-emerald-100 flex items-center gap-2">
+                            Unified Payments Interface
+                          </span>
+                        </div>
+                        <p className="text-emerald-100/60 text-[10px] font-bold tracking-wider uppercase mb-1">Payment Address</p>
+                        <p className="text-2xl md:text-3xl font-mono font-bold tracking-wide text-white drop-shadow-sm truncate w-full max-w-[200px] md:max-w-none">
+                          {mentor?.upiId || 'Add UPI ID'}
+                        </p>
+                      </div>
+
+                      <div className="hidden md:flex items-center gap-2 text-xs font-bold text-emerald-100 bg-emerald-900/30 px-3 py-1.5 rounded-full w-fit backdrop-blur-sm border border-emerald-500/30 mt-4">
+                        <Shield className="w-3.5 h-3.5" />
+                        {mentor?.bankName ? `Linked: ${mentor.bankName}` : 'Secure Payment Gateway'}
+                      </div>
+                    </div>
+
+                    {/* Right: QR Code */}
+                    <div className="relative shrink-0">
+                      <div className="bg-white p-3.5 rounded-2xl shadow-xl shadow-emerald-900/40 transform rotate-[-3deg] group-hover:rotate-0 transition-all duration-500 ease-out border-4 border-white/20">
+                        {mentor?.upiId ? (
+                          <QRCodeSVG
+                            value={`upi://pay?pa=${mentor.upiId}&pn=${mentor.name || 'Mentor'}&cu=INR`}
+                            size={130}
+                            className="rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-[130px] h-[130px] bg-slate-100 rounded-lg flex items-center justify-center text-slate-300">
+                            <QrCode className="w-12 h-12" />
+                          </div>
+                        )}
+                      </div>
+                      {/* Scan Me Label */}
+                      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 whitespace-nowrap z-20">
+                        Your QR
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </SmoothWrapper>
             </div>
           </FadeIn>
         </div>

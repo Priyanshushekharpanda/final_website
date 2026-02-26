@@ -81,20 +81,24 @@ export default function ProfilePreview() {
         <div className={`bg-white rounded-[2rem] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative transition-all duration-500 ease-out ${isQRVisible ? 'scale-[1.05] shadow-2xl ring-1 ring-slate-200 z-20' : 'z-0'}`}>
 
           {/* Soft Modern Banner */}
-          <div className="h-48 rounded-t-[2rem] bg-gradient-to-r from-teal-400 via-blue-500 to-indigo-500 relative overflow-hidden">
+          <div className="h-32 sm:h-40 rounded-t-[2rem] bg-gradient-to-r from-teal-400 via-blue-500 to-indigo-500 relative overflow-hidden">
             <div className="absolute top-[-20%] right-[-10%] w-96 h-96 bg-white/20 rounded-full blur-3xl" />
             <div className="absolute bottom-[-50%] left-[-10%] w-64 h-64 bg-purple-500/30 rounded-full blur-3xl" />
           </div>
 
-          <div className="px-6 sm:px-8 pb-10 relative">
+          <div className="px-6 sm:px-8 pb-6 relative">
 
             {/* Avatar & Interactive Share Group */}
-            <div className="relative inline-block -mt-16 sm:-mt-20 mb-6 z-20">
-              <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-white bg-slate-100 shadow-md overflow-hidden relative z-10 flex items-center justify-center">
+            <div className="relative inline-block -mt-12 sm:-mt-16 mb-4 z-20">
+              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full border-4 border-white bg-slate-100 shadow-md overflow-hidden relative z-10 flex items-center justify-center">
                 {profileImageUrl ? (
-                  <img src={profileImageUrl} alt={safeMentor.name} className="w-full h-full object-cover" />
+                  <img key={profileImageUrl} src={profileImageUrl} alt={safeMentor.name} className="w-full h-full object-cover animate-in fade-in zoom-in duration-500" />
                 ) : (
-                  <img src="https://ui-avatars.com/api/?name=Ayman+Shaltoni&background=eef2ff&color=4f46e5" alt={safeMentor.name} className="w-full h-full object-cover" />
+                  <img
+                    src="https://api.dicebear.com/9.x/toon-head/svg?seed=Vivian"
+                    alt={safeMentor.name}
+                    className="w-full h-full object-cover animate-in fade-in zoom-in duration-500"
+                  />
                 )}
               </div>
 
@@ -145,15 +149,15 @@ export default function ProfilePreview() {
 
             {/* Profile Details */}
             <div className={`max-w-3xl relative z-10 transition-all duration-500 ease-out ${isQRVisible ? 'sm:translate-x-40' : ''}`}>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-1">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-1">
                 {safeMentor.name}
               </h1>
-              <h2 className="text-[16px] font-medium text-blue-600 mb-5">
+              <h2 className="text-[16px] font-medium text-blue-600 mb-4">
                 {safeMentor.title}
               </h2>
 
               {/* Meta Stats Row */}
-              <div className="flex flex-wrap items-center gap-5 text-[14px] text-slate-500 font-medium mb-8">
+              <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-[14px] text-slate-500 font-medium mb-4">
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-4 h-4 text-slate-400" />
                   {safeMentor.location}
@@ -167,56 +171,56 @@ export default function ProfilePreview() {
                   {safeMentor.responseTime}
                 </div>
               </div>
+            </div>
 
-              {/* Bio Section */}
-              <div className="mb-8">
-                <h3 className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-3">About</h3>
-                <p className="text-[15px] leading-relaxed text-slate-700 whitespace-pre-wrap">
-                  {safeMentor.about}
-                </p>
-              </div>
+            {/* Bio Section */}
+            <div className="mb-6">
+              <h3 className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-3">About</h3>
+              <p className="text-[15px] leading-relaxed text-slate-700 whitespace-pre-wrap">
+                {safeMentor.about}
+              </p>
+            </div>
+            {/* Footer Row: Tags & Socials */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-6 border-t border-slate-100">
 
-              {/* Footer Row: Tags & Socials */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-6 border-t border-slate-100">
-
-                {/* Soft Skill Pills */}
-                <div className="flex flex-wrap gap-2">
-                  {safeMentor.skills.map((skill, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1.5 bg-[#EBF4FF] text-blue-700 text-[13px] font-semibold rounded-lg"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Social Links */}
-                <div className="flex items-center gap-2">
-                  {safeMentor.instagram && (
-                    <a href={safeMentor.instagram} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400 hover:text-[#E1306C] hover:bg-[#E1306C]/10 rounded-full transition-all">
-                      <Instagram className="w-5 h-5" />
-                    </a>
-                  )}
-                  {safeMentor.linkedin && (
-                    <a href={safeMentor.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400 hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 rounded-full transition-all">
-                      <Linkedin className="w-5 h-5" />
-                    </a>
-                  )}
-                  <button
-                    onClick={handleCopyLink}
-                    className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-all"
-                    title="Copy Profile Link"
+              {/* Soft Skill Pills */}
+              <div className="flex flex-wrap gap-2">
+                {safeMentor.skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1.5 bg-[#EBF4FF] text-blue-700 text-[13px] font-semibold rounded-lg"
                   >
-                    {copied ? <Check className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5" />}
-                  </button>
-                </div>
-
+                    {skill}
+                  </span>
+                ))}
               </div>
+
+              {/* Social Links */}
+              <div className="flex items-center gap-2">
+                {safeMentor.instagram && (
+                  <a href={safeMentor.instagram} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400 hover:text-[#E1306C] hover:bg-[#E1306C]/10 rounded-full transition-all">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                )}
+                {safeMentor.linkedin && (
+                  <a href={safeMentor.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400 hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 rounded-full transition-all">
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                )}
+                <button
+                  onClick={handleCopyLink}
+                  className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-all"
+                  title="Copy Profile Link"
+                >
+                  {copied ? <Check className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5" />}
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
-      </FadeIn>
-    </div>
+
+      </FadeIn >
+    </div >
   );
 }

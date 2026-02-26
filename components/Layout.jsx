@@ -30,14 +30,14 @@ export default function Layout() {
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-40 bg-white border-r border-slate-200/60 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.01)] transition-all duration-300 ease-in-out
-        ${isCollapsed ? 'md:w-[80px]' : 'md:w-[260px]'}
-        ${isMobileMenuOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full md:translate-x-0'}
+        ${isCollapsed ? 'w-[80px]' : 'w-[260px] xl:w-[300px]'}
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
 
         {/* Collapse Toggle Button */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-9 bg-white border border-slate-200 rounded-full p-1 shadow-sm hover:bg-slate-50 text-slate-500 z-50 hidden md:flex"
+          className="absolute -right-3 top-9 bg-white border border-slate-200 rounded-full p-1 shadow-sm hover:bg-slate-50 text-slate-500 z-50 flex"
         >
           {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
@@ -90,7 +90,7 @@ export default function Layout() {
 
           {/* Typography perfectly aligned to the baseline of the SVG */}
           {!isCollapsed && (
-            <span className="text-[26px] font-bold tracking-tight leading-none mb-[2px] -ml-1">
+            <span className="text-[26px] xl:text-[30px] font-bold tracking-tight leading-none mb-[2px] -ml-1 transition-all">
               <span className="text-slate-900">ento</span>
               <span className="text-[oklch(0.546_0.245_262.24)]">Mania</span>
             </span>
@@ -105,15 +105,15 @@ export default function Layout() {
           >
             <div className="w-9 h-9 rounded-full bg-[oklch(0.96_0.03_262.24)] overflow-hidden shrink-0">
               <img
-                src={profileImageUrl || "https://ui-avatars.com/api/?name=User&background=eef2ff&color=4f46e5"}
-                alt="Profile"
+                src={profileImageUrl || "https://api.dicebear.com/9.x/toon-head/svg?seed=Vivian"}
+                alt={mentor?.name || "Profile"}
                 className="w-full h-full object-cover"
               />
             </div>
             {!isCollapsed && (
               <div className="overflow-hidden flex-1">
-                <h3 className="text-sm font-semibold text-slate-800 truncate">{mentor?.name || 'User'}</h3>
-                <p className="text-xs text-slate-500 truncate">{mentor?.title || 'Mentor'}</p>
+                <h3 className="text-sm xl:text-base font-semibold text-slate-800 truncate">{mentor?.name || 'User'}</h3>
+                <p className="text-xs xl:text-sm text-slate-500 truncate">{mentor?.title || 'Mentor'}</p>
               </div>
             )}
           </div>
@@ -128,7 +128,7 @@ export default function Layout() {
               onClick={() => setIsMobileMenuOpen(false)}
               title={isCollapsed ? label : ''}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                `flex items-center gap-3 px-3 py-2.5 xl:py-3.5 rounded-lg text-sm xl:text-base font-medium transition-all duration-200 ${isActive
                   ? 'bg-[oklch(0.96_0.03_262.24)]/80 text-[oklch(0.546_0.245_262.24)]'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 } ${isCollapsed ? 'justify-center' : ''}`
@@ -137,7 +137,7 @@ export default function Layout() {
               {({ isActive }) => (
                 <>
                   <Icon
-                    className={`w-5 h-5 ${isActive ? 'text-[oklch(0.546_0.245_262.24)]' : 'text-slate-400'}`}
+                    className={`w-5 h-5 xl:w-6 xl:h-6 ${isActive ? 'text-[oklch(0.546_0.245_262.24)]' : 'text-slate-400'}`}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
                   {!isCollapsed && label}
@@ -149,7 +149,7 @@ export default function Layout() {
       </aside>
 
       {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'md:ml-[80px]' : 'md:ml-[260px]'} min-h-screen flex flex-col`}>
+      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'md:ml-[80px]' : 'md:ml-[260px] xl:ml-[300px]'} min-h-screen flex flex-col`}>
         {/* Mobile Header */}
         <header className="h-16 flex items-center justify-between px-6 md:hidden bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20">
           <div className="flex items-end gap-0">

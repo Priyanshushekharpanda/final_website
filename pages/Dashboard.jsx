@@ -52,11 +52,10 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function Dashboard() {
-  const { mentor, setMentor } = useMentor();
+  const { mentor } = useMentor();
   const navigate = useNavigate();
   const [notification, setNotification] = useState(null);
   const [chartVisible, setChartVisible] = useState(false);
-  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   // Fallback values
   const totalEarnings = mentor?.totalEarnings || "13,000";
@@ -75,46 +74,31 @@ export default function Dashboard() {
     });
   };
 
-  const handleWithdraw = () => {
-    const currentBalance = parseFloat(String(walletBalance).replace(/,/g, ''));
-    if (isNaN(currentBalance) || currentBalance <= 0) {
-      showNotification('withdraw', 'Wallet is already empty.');
-      return;
-    }
-
-    setIsWithdrawing(true);
-    setTimeout(() => {
-      setIsWithdrawing(false);
-      if (setMentor) {
-        setMentor(prev => ({ ...prev, walletBalance: "0.00" }));
-      }
-      showNotification('withdraw', 'Transfer successful! Funds sent to your account.');
-    }, 2500);
-  };
-
   return (
     <div className="min-h-screen bg-slate-50/50 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
       {/* Header */}
-      <header className="px-4 sm:px-8 pt-6 sm:pt-8 pb-6 bg-white/70 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-10 flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between items-start sm:items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
-          <p className="text-slate-500 mt-1 font-medium">Welcome back, {mentor?.name}! Here is your latest activity.</p>
+      <header className="bg-white/70 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-10">
+        <div className="px-4 sm:px-8 pt-6 sm:pt-8 pb-6 max-w-[1800px] mx-auto flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between items-start sm:items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+            <p className="text-slate-500 mt-1 font-medium">Welcome back, {mentor?.name}! Here is your latest activity.</p>
+          </div>
+          <button
+            onClick={handleShareProfile}
+            className="relative bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-blue-200"
+          >
+            Share Profile
+            {notification?.id === 'share' && (
+              <div className="absolute top-full right-0 mt-2 w-max bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-lg shadow-xl z-50 animate-in fade-in slide-in-from-top-1">
+                {notification.message}
+                <div className="absolute -top-1 right-3 w-2 h-2 bg-slate-900 rotate-45"></div>
+              </div>
+            )}
+          </button>
         </div>
-        <button
-          onClick={handleShareProfile}
-          className="relative bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-blue-200"
-        >
-          Share Profile
-          {notification?.id === 'share' && (
-            <div className="absolute top-full right-0 mt-2 w-max bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-lg shadow-xl z-50 animate-in fade-in slide-in-from-top-1">
-              {notification.message}
-              <div className="absolute -top-1 right-3 w-2 h-2 bg-slate-900 rotate-45"></div>
-            </div>
-          )}
-        </button>
       </header>
 
-      <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+      <div className="p-4 sm:p-8 max-w-[1800px] mx-auto space-y-6 sm:space-y-8">
 
         {/* Top Stats Row */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
@@ -124,19 +108,6 @@ export default function Dashboard() {
               {/* Shine Effect */}
               <div className="absolute inset-0 -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12 z-0 pointer-events-none" />
 
-              {/* Withdrawal Animation Overlay */}
-              {isWithdrawing && (
-                <div className="absolute inset-0 z-20 bg-amber-600/90 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in duration-300">
-                  <div className="relative mb-3">
-                    <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center animate-bounce border border-white/30">
-                      <IndianRupee className="w-7 h-7 text-white" />
-                    </div>
-                    <div className="absolute inset-0 border-4 border-white/20 rounded-full animate-ping"></div>
-                  </div>
-                  <p className="text-white font-bold text-sm animate-pulse tracking-wide">Transferring Cash...</p>
-                </div>
-              )}
-
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <Wallet className="w-24 h-24 text-white mix-blend-overlay" />
               </div>
@@ -144,13 +115,6 @@ export default function Dashboard() {
                 <div className="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/10 shadow-inner">
                   <Wallet className="w-6 h-6 text-white" />
                 </div>
-                <button
-                  onClick={handleWithdraw}
-                  disabled={isWithdrawing}
-                  className="text-[10px] font-bold text-amber-900 bg-white/90 hover:bg-white border border-white/20 px-3 py-1.5 rounded-full transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isWithdrawing ? 'Processing...' : 'Withdraw'}
-                </button>
               </div>
               <p className="text-sm font-bold text-amber-100 uppercase tracking-wider relative z-10">Wallet Balance</p>
               <p className="text-3xl font-black text-white mt-1 relative z-10 drop-shadow-sm">₹{walletBalance}</p>

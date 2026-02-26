@@ -118,18 +118,22 @@ export default function Sessions() {
         }
         .custom-calendar .react-calendar__navigation {
           display: flex;
-          height: 48px;
+          height: 60px;
           margin-bottom: 1rem;
           align-items: center;
         }
         .custom-calendar .react-calendar__navigation button {
           min-width: 44px;
+          height: 44px;
           background: transparent;
           border-radius: 12px;
-          color: #0f172a;
-          font-weight: 700;
-          font-size: 1rem;
+          color: #1e293b;
+          font-weight: 800;
+          font-size: 1.125rem;
           transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .custom-calendar .react-calendar__navigation button:enabled:hover,
         .custom-calendar .react-calendar__navigation button:enabled:focus {
@@ -137,16 +141,19 @@ export default function Sessions() {
         }
         .custom-calendar .react-calendar__navigation button[disabled] {
           background-color: transparent;
-          color: #cbd5e1;
+          opacity: 0.5;
         }
         .custom-calendar .react-calendar__month-view__weekdays {
           text-align: center;
           text-transform: uppercase;
-          font-weight: 700;
+          font-weight: 800;
           font-size: 0.75rem;
-          color: #64748b;
-          margin-bottom: 0.75rem;
+          letter-spacing: 0.05em;
+          color: #94a3b8;
+          margin-bottom: 1rem;
           display: flex !important;
+          border-bottom: 1px solid #f1f5f9;
+          padding-bottom: 1rem;
         }
         .custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
           text-decoration: none;
@@ -156,40 +163,45 @@ export default function Sessions() {
         }
         .custom-calendar .react-calendar__tile {
           max-width: 100%;
-          padding: 0.75rem 0.5rem;
+          padding: 10px 6px;
           background: none;
           text-align: center;
-          line-height: 16px;
-          font-size: 0.875rem;
-          font-weight: 500;
-          color: #334155;
-          border-radius: 9999px;
-          transition: all 0.2s ease;
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: #475569;
+          border-radius: 14px;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
-          height: 44px;
+          height: 52px;
           flex: 0 0 14.2857% !important;
-          overflow: hidden;
+          overflow: visible;
+          margin-bottom: 4px;
         }
         .custom-calendar .react-calendar__tile:enabled:hover,
         .custom-calendar .react-calendar__tile:enabled:focus {
-          background-color: #f1f5f9;
-          color: #0f172a;
+          background-color: #eff6ff;
+          color: #2563eb;
+          transform: scale(1.1);
+          z-index: 10;
         }
         .custom-calendar .react-calendar__tile--now {
-          background-color: #e2e8f0;
+          background-color: #f8fafc;
           color: #0f172a;
-          font-weight: 700;
+          font-weight: 800;
+          border: 1px solid #e2e8f0;
         }
         .custom-calendar .react-calendar__tile--active,
         .custom-calendar .react-calendar__tile--active:enabled:hover,
         .custom-calendar .react-calendar__tile--active:enabled:focus {
-          background-color: #2563eb !important;
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
           color: white !important;
           font-weight: 700;
-          box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+          box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.4);
+          border: none;
+          transform: scale(1.05);
         }
         .custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
           color: #cbd5e1;
@@ -197,8 +209,8 @@ export default function Sessions() {
       `}</style>
 
       {/* Header */}
-      <header className="px-4 sm:px-8 py-6 bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
+        <div className="px-4 sm:px-8 py-6 max-w-[1800px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
             <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 tracking-tight">Sessions</h1>
             <p className="text-slate-500 mt-2 text-lg font-medium">Manage your mentoring schedule and upcoming calls</p>
@@ -213,7 +225,7 @@ export default function Sessions() {
         </div>
       </header>
 
-      <main className="p-4 sm:p-8 max-w-7xl mx-auto space-y-8">
+      <main className="p-4 sm:p-8 max-w-[1800px] mx-auto space-y-8">
 
         {/* Top Section: Grid with Lists and Calendar */}
         <div className="grid gap-8 lg:grid-cols-12 flex-col-reverse lg:flex-row">
@@ -401,17 +413,17 @@ export default function Sessions() {
           </div>
 
           {/* Right Side - Calendar & Stats */}
-          <div className="lg:col-span-4 flex flex-col gap-8">
+          <div className="lg:col-span-4 flex flex-col gap-8 h-full">
 
             {/* Highly Styled Calendar */}
-            <FadeIn delay={0.2}>
-              <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50">
+            <FadeIn delay={0.2} className="flex-1">
+              <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-slate-200 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/50 h-full flex flex-col justify-center min-h-[500px]">
                 <Calendar
                   onChange={setSelectedDate}
                   value={selectedDate}
                   className="custom-calendar"
-                  prevLabel={<span className="text-xl">‹</span>}
-                  nextLabel={<span className="text-xl">›</span>}
+                  prevLabel={<ChevronLeft className="w-5 h-5 text-slate-400 hover:text-blue-600" />}
+                  nextLabel={<ChevronRight className="w-5 h-5 text-slate-400 hover:text-blue-600" />}
                   prev2Label={null}
                   next2Label={null}
                   tileClassName={({ date }) => {
@@ -426,7 +438,7 @@ export default function Sessions() {
             </FadeIn>
 
             {/* Stats Card */}
-            <FadeIn delay={0.3} className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl shadow-lg shadow-slate-900/10 border border-slate-800 p-7 text-white relative overflow-hidden">
+            <FadeIn delay={0.3} className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl shadow-lg shadow-slate-900/10 border border-slate-800 p-8 text-white relative overflow-hidden flex-none h-40 flex flex-col justify-center">
               <div className="absolute top-0 right-0 p-4 opacity-10">
                 <CalendarIcon className="w-24 h-24" />
               </div>
