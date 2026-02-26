@@ -392,7 +392,7 @@ export default function EditProfile() {
                   <div
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
-                    className={`absolute left-1/2 -translate-x-1/2 top-full mt-4 lg:mt-0 lg:top-auto lg:left-[115%] lg:bottom-0 lg:translate-x-0 z-20 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] origin-top lg:origin-left ${isQRVisible ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-90 invisible lg:-translate-x-8'}`}
+                    className={`absolute left-1/2 -translate-x-1/2 top-full mt-12 lg:mt-0 lg:top-0 lg:left-[125%] lg:translate-x-0 z-20 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] origin-top lg:origin-left ${isQRVisible ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-90 invisible lg:-translate-x-8'}`}
                   >
                     <div className="hidden lg:block absolute w-16 h-full -left-12 top-0" />
                     <div className="bg-white p-5 rounded-[2rem] shadow-2xl shadow-indigo-900/10 border border-slate-100 w-[180px] flex flex-col items-center">
